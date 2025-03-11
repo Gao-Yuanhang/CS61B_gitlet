@@ -2,6 +2,8 @@ package gitlet;
 
 // TODO: any imports you need here
 
+import java.io.File;
+import java.io.Serializable;
 import java.util.Date; // TODO: You'll likely use this in this class
 
 /** Represents a gitlet commit object.
@@ -10,7 +12,7 @@ import java.util.Date; // TODO: You'll likely use this in this class
  *
  *  @author TODO
  */
-public class Commit {
+public class Commit implements Serializable {
     /**
      * TODO: add instance variables here.
      *
@@ -20,7 +22,41 @@ public class Commit {
      */
 
     /** The message of this Commit. */
-    private String message;
+    public String message;
+
+    public long timestamp;
+
+    /** for the unique init commit, it points to null*/
+    public Commit parentCommit;
+
+    /** when generate a new commit, set for the current commit*/
+    public Commit childCommit;
+
+    public String ID;
+
+    /** all commits in all repositories will trace back to it*/
+    public static Commit RootCommit(){
+        return RootCommit.getRootCommit();
+    }
+
+    /** using the singleton pattern*/
+    private static class RootCommit extends Commit{
+        private static RootCommit rootCommit;
+
+        private RootCommit(){}
+
+        public static RootCommit getRootCommit() {
+            if(rootCommit == null){
+                rootCommit = new RootCommit();
+                rootCommit.timestamp = 0;
+                rootCommit.message = "initial commit";
+
+                rootCommit.ID = Utils.sha1(rootCommit);
+            }
+            return rootCommit;
+        }
+    }
+
 
     /* TODO: fill in the rest of this class. */
 }
