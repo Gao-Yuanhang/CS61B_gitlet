@@ -190,16 +190,12 @@ class Utils {
 
     /* OTHER FILE UTILITIES */
 
-    /** Return the concatentation of FIRST and OTHERS into a File designator,
-       analogous to the {@link java.nio.file.Paths.#get(String, String[])}
-     *  method. */
+
     static File join(String first, String... others) {
         return Paths.get(first, others).toFile();
     }
 
-    /** Return the concatentation of FIRST and OTHERS into a File designator,
-     *  analogous to the {@link java.nio.file.Paths.#get(String, String[])}
-     *  method. */
+
     static File join(File first, String... others) {
         return Paths.get(first.getPath(), others).toFile();
     }
@@ -236,4 +232,38 @@ class Utils {
         System.out.printf(msg, args);
         System.out.println();
     }
+
+    /** lgN by bisection, input: an ordered list, output: null represents no result*/
+    static String findString(List<String> stringList, String target){
+        int left = 0;
+        int right = stringList.size()-1;
+        while(left != right){
+            int mid = (int)((left + right)/2);
+            if(stringList.get(mid).compareTo(target) < 0){
+                /** mid+-1, otherwise may lead to a dead loop*/
+                left = mid+1;
+            }else if(stringList.get(mid).compareTo(target) > 0){
+                right = mid-1;
+            }else{
+                return stringList.get(mid);
+            }
+        }
+        return null;
+    }
+
+    static boolean checkFilesDifference(File file1, File file2){
+        byte [] b1 = Utils.readContents(file1);
+        byte [] b2 = Utils.readContents(file2);
+        if(b2.length != b1.length){
+            return false;
+        }
+        // TODO: index in java must be int, what if the length exceeds int
+        for(int i=0; i<b1.length; i++){
+            if(b2[i]!=b1[i]){
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

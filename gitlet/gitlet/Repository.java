@@ -1,8 +1,10 @@
 package gitlet;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 import static gitlet.Utils.*;
 
@@ -28,11 +30,15 @@ public class Repository implements Serializable {
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
 
-    /** simulating the staging area*/
-    public static final File STAGING_DIR = join(GITLET_DIR, "staging");
+    /** simulating the staging area, separately, record files to add and to remove*/
+    public static final File STAGING_ADD_DIR = join(GITLET_DIR, "staging_addition");
+    public static final File STAGING_RM_DIR = join(GITLET_DIR, "staging_removal");
 
     /** serialization on the Repository object, its instance variables(e.g. Commits) will be serialized recursively*/
-    public static final File REPOINFO_DIR = join(CWD, "repo_info");
+    public static final File REPOINFO_DIR = join(GITLET_DIR, "repo_info");
+
+    /** store all the blobs, add suffix '_ + number' to distinguish different versions*/
+    public static final File BLOB_DIR = join(GITLET_DIR, "blobs");
 
     public Commit head;
 
@@ -67,7 +73,8 @@ public class Repository implements Serializable {
 
     public void initRepository(Commit rootCommit){
         Repository.GITLET_DIR.mkdirs();
-        Repository.STAGING_DIR.mkdirs();
+        Repository.STAGING_ADD_DIR.mkdirs();
+        Repository.STAGING_RM_DIR.mkdirs();
         Repository.REPOINFO_DIR.mkdirs();
         this.addBranch("master", rootCommit);
         this.setCurrentBranch("master");
@@ -82,5 +89,33 @@ public class Repository implements Serializable {
         /** by reflection*/
         return Utils.readObject(REPOINFO_DIR, Repository.class);
     }
-    /* TODO: fill in the rest of this class. */
+
+    public void add(File fileToAdd){
+        // TODO: as a simplification in the instruction, do not resolve the subdirectories?
+        List<String> plainFileNames = Utils.plainFilenamesIn(this.STAGING_ADD_DIR);
+        String fileInStaging = Utils.findString(plainFileNames, fileToAdd.getName());
+        //phase1, add or overwrite in the staging area for addition
+        if(fileInStaging != null){
+            if(!Utils.restrictedDelete(fileToAdd)){
+                throw new GitletException("delete failure in the add command");
+            }
+        }
+        //write in the form of byte stream
+        File newFile = join(STAGING_ADD_DIR, fileToAdd.getName());
+        try {
+            newFile.createNewFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        writeContents(newFile, Utils.readContents(fileToAdd));
+        //phase2, check if the file is identical to the current commit version, if it is, remove from the staging area
+        File fileInCommit = head.findFile(fileToAdd.getName());
+        if(fileInCommit != null){
+            if(Utils.checkFilesDifference(newFile, fileInCommit)){
+                Utils.restrictedDelete(newFile);
+            }
+        }
+        // TODO: for the file staged for removal
+
+    }
 }

@@ -18,13 +18,24 @@ public class Main {
         Repository currentRepo = null;
 
         // TODO: what if args is empty?
+        if(args.length == 0){
+            System.err.println("Please enter a command.");
+            System.exit(0);
+        }
         String firstArg = args[0];
+        if(!firstArg.equals("init")){
+            File folder = Repository.GITLET_DIR;
+            if (!folder.exists() || !folder.isDirectory()){
+                System.err.println("Not in an initialized Gitlet directory.");
+                System.exit(0);
+            }
+        }
         switch(firstArg) {
             case "init":
-                // TODO: handle the `init` command
                 File folder = Repository.GITLET_DIR;
                 if (folder.exists() && folder.isDirectory()) {
-                    throw new GitletException("A Gitlet version-control system already exists in the current directory.");
+                    System.err.println("A Gitlet version-control system already exists in the current directory.");
+                    System.exit(0);
                 } else {
                     Commit rootCommit = Commit.RootCommit();
                     currentRepo = new Repository();
@@ -32,11 +43,25 @@ public class Main {
                 }
                 break;
             case "add":
-                // TODO: handle the `add [filename]` command
+                if(args.length != 2){
+                    // TODO: output like this?
+                    System.err.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                String secondArg = args[1];
+                File fileToAdd = new File(secondArg);
+                if(!fileToAdd.exists()){
+                    // TODO: throw an exception or print in the err stream and exit(0)
+                    System.err.println("File does not exist");
+                    System.exit(0);
+                }
+
                 break;
-            // TODO: FILL THE REST IN
             case "commit":
                 break;
+            default:
+                System.err.println("No command with that name exists.");
+                System.exit(0);
         }
         /** by serialization before exit*/
         if (currentRepo != null) {
