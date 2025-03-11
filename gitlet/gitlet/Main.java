@@ -38,6 +38,8 @@ public class Main {
                     System.exit(0);
                 } else {
                     Commit rootCommit = Commit.RootCommit();
+                    //set ID for rootCommit
+                    rootCommit.CalculateID();
                     currentRepo = new Repository();
                     currentRepo.initRepository(rootCommit);
                 }
@@ -55,9 +57,19 @@ public class Main {
                     System.err.println("File does not exist");
                     System.exit(0);
                 }
-
+                currentRepo.add(fileToAdd);
                 break;
             case "commit":
+                if(args.length != 2){
+                    System.err.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                String message = args[1];
+                if(message.length() == 0){
+                    System.err.println("Please enter a commit message.");
+                    System.exit(0);
+                }
+                currentRepo.Commit(message);
                 break;
             default:
                 System.err.println("No command with that name exists.");

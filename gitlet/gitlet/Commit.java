@@ -61,8 +61,6 @@ public class Commit implements Serializable {
                 rootCommit = new RootCommit();
                 rootCommit.timestamp = 0;
                 rootCommit.message = "initial commit";
-
-                rootCommit.ID = Utils.sha1(rootCommit);
             }
             return rootCommit;
         }
@@ -81,6 +79,13 @@ public class Commit implements Serializable {
         }
         return null;
     }
+
+    public void CalculateID(){
+        //SHA-1 ID must include the file references, parent reference, log message and commit time
+        // TODO: what if parentCommit be null, how to convert long type(timestamp) to byte[]
+        this.ID = Utils.sha1(Utils.serialize(blobs), Utils.serialize(parentCommit), message, String.valueOf(timestamp));
+    }
+
 
     /* TODO: fill in the rest of this class. */
 }

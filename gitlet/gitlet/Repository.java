@@ -76,6 +76,7 @@ public class Repository implements Serializable {
         Repository.STAGING_ADD_DIR.mkdirs();
         Repository.STAGING_RM_DIR.mkdirs();
         Repository.REPOINFO_DIR.mkdirs();
+        Repository.BLOB_DIR.mkdirs();
         this.addBranch("master", rootCommit);
         this.setCurrentBranch("master");
         this.head = rootCommit;
@@ -116,6 +117,62 @@ public class Repository implements Serializable {
             }
         }
         // TODO: for the file staged for removal
+    }
 
+    public void Commit(String message){
+        //resolve failure cases
+        if(Utils.plainFilenamesIn(STAGING_ADD_DIR).isEmpty() && Utils.plainFilenamesIn(STAGING_RM_DIR).isEmpty()){
+            System.err.println("No changes added to the commit.");
+            System.exit(0);
+        }
+        //basic information for new commit
+        Commit newCommit = new Commit();
+        newCommit.message = message;
+        newCommit.timestamp = System.currentTimeMillis();
+        newCommit.parentCommit = head;
+        //set newCommit as the childCommit of its parent
+        head.childCommit = newCommit;
+        //update the blobs and tracked file names
+        newCommit.tracked_file_names = head.tracked_file_names;
+        newCommit.blobs = head.blobs;
+        for(String fileName : Utils.plainFilenamesIn(STAGING_ADD_DIR)){
+            if(head.tracked_file_names.contains(fileName)){
+                File currentVersionFile = head.findFile(fileName);
+                newCommit.blobs.remove(currentVersionFile);
+                String currentVersionFileName = currentVersionFile.getName();
+                int versionNum = Integer.valueOf(currentVersionFileName.substring(currentVersionFileName.lastIndexOf("_")));
+                versionNum++;
+                //generate a new version of the file, and replace the old version
+                File newBlob = join(BLOB_DIR, fileName+"_"+String.valueOf(versionNum));
+                Utils.writeContents(newBlob, readContents(join(STAGING_ADD_DIR, fileName)));
+                newCommit.blobs.add(newBlob);
+            }else{
+                newCommit.tracked_file_names.add(fileName);
+                File newBlob = join(BLOB_DIR, fileName+"_"+String.valueOf(0));
+                Utils.writeContents(newBlob, readContents(join(STAGING_ADD_DIR, fileName)));
+                newCommit.blobs.add(newBlob);
+            }
+        }
+        //resolve 'rm'
+        for(String fileName : Utils.plainFilenamesIn(STAGING_RM_DIR)){
+            if(head.tracked_file_names.contains(fileName)){
+                File currentVersionFile = head.findFile(fileName);
+                newCommit.blobs.remove(currentVersionFile);
+                newCommit.tracked_file_names.remove(fileName);
+            }else{
+                // TODO: should be an error?
+            }
+        }
+        //update head
+        this.setHead(newCommit);
+        //calculate the ID for new commit
+        newCommit.CalculateID();
+        //clear the staging area
+        for(String fileName : Utils.plainFilenamesIn(STAGING_ADD_DIR)){
+            restrictedDelete(join(STAGING_ADD_DIR, fileName));
+        }
+        for(String fileName : Utils.plainFilenamesIn(STAGING_RM_DIR)){
+            restrictedDelete(join(STAGING_RM_DIR, fileName));
+        }
     }
 }
