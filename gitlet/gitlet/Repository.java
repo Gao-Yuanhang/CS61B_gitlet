@@ -59,6 +59,7 @@ public class Repository implements Serializable {
         for(Branch branch : branches){
             if(branch.name.equals(branchName)){
                 currentBranch = branch;
+                return;
             }
         }
         throw new GitletException("no such branch");
@@ -75,7 +76,6 @@ public class Repository implements Serializable {
         Repository.GITLET_DIR.mkdirs();
         Repository.STAGING_ADD_DIR.mkdirs();
         Repository.STAGING_RM_DIR.mkdirs();
-        Repository.REPOINFO_DIR.mkdirs();
         Repository.BLOB_DIR.mkdirs();
         this.addBranch("master", rootCommit);
         this.setCurrentBranch("master");
@@ -86,7 +86,7 @@ public class Repository implements Serializable {
         Utils.writeObject(REPOINFO_DIR, this);
     }
 
-    public Repository recoverRepo(){
+    public static Repository recoverRepo(){
         /** by reflection*/
         return Utils.readObject(REPOINFO_DIR, Repository.class);
     }

@@ -28,6 +28,9 @@ public class Main {
             if (!folder.exists() || !folder.isDirectory()){
                 System.err.println("Not in an initialized Gitlet directory.");
                 System.exit(0);
+            }else{
+                //deserialize the Object of current repository
+                currentRepo = Repository.recoverRepo();
             }
         }
         switch(firstArg) {
@@ -77,6 +80,7 @@ public class Main {
         }
         /** by serialization before exit*/
         if (currentRepo != null) {
+            Repository.REPOINFO_DIR.delete();
             currentRepo.storeRepo();
         }else{
             throw new GitletException("have not set the currentRepo");

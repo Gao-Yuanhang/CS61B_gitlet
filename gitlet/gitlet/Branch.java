@@ -1,6 +1,9 @@
 package gitlet;
 
-public class Branch {
+import java.io.Serializable;
+
+/** as instance variable of class 'Repository', it must also implement interface 'Serializable'*/
+public class Branch implements Serializable {
     public String name;
 
     public Commit currentCommit;
