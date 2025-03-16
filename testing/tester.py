@@ -401,6 +401,7 @@ if __name__ == "__main__":
             getopt(sys.argv[1:], '',
                    ['show=', 'keep', 'progdir=', 'verbose', 'src=',
                     'tolerance=', 'debug'])
+        print(files)
         for opt, val in opts:
             if opt == '--show':
                 val = val.lower()
@@ -443,8 +444,10 @@ if __name__ == "__main__":
     if ON_WINDOWS:
         if 'CLASSPATH' in environ:
             environ['CLASSPATH'] = "{};{}".format(prog_dir, environ['CLASSPATH'])
+            print("1ssssss"+environ['CLASSPATH'])
         else:
             environ['CLASSPATH'] = "{}".format(prog_dir)
+            print("1yyyyyyyy"+environ['CLASSPATH'])
     else:
         if 'CLASSPATH' in environ:
             environ['CLASSPATH'] = "{}:{}".format(prog_dir, environ['CLASSPATH'])

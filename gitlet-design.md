@@ -44,9 +44,16 @@ cd ./gitlet/testing
 D:\2024\CS61B projects\CS61B_gitlet\gitlet\target\classes\gitlet
 .\gitlet\target\classes\gitlet
 python tester.py --verbose test01-init.in
-python tester.py --verbose --progdir=".\gitlet\target\classes\gitlet" .test01-init.in
+python tester.py --verbose --progdir=".\gitlet\target\classes\gitlet" test01-init.in
 
-python tester.py --verbose --progdir=".\gitlet\target\classes\gitlet" .test01-init.in
+
+python tester.py --verbose --progdir=".\gitlet\target\classes\gitlet" ./samples/test01-init.in
+
+python tester.py --verbose --progdir="../target/classes/gitlet" ./samples/test01-init.in
+
+python tester.py --verbose --progdir="D:\2024\CS61B projects\CS61B_gitlet\gitlet\target\classes\gitlet" ./samples/test01-init.in
+
+java -cp D:\2024\CS61B projects\CS61B_gitlet\gitlet\target gitlet.Main
 ```
 
 
