@@ -2,8 +2,6 @@ package gitlet;
 
 // TODO: any imports you need here
 
-import com.sun.source.tree.Tree;
-
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;

@@ -427,6 +427,8 @@ if __name__ == "__main__":
             prog_dir = abspath(getcwd())
             k = 10
             while k > 0 and access(prog_dir, W_OK):
+                #print(prog_dir)
+                #print(join(prog_dir, 'gitlet', 'Main.class'))
                 k -= 1
                 if exists(join(prog_dir, 'gitlet', 'Main.class')):
                     break
