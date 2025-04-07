@@ -97,9 +97,7 @@ public class Repository implements Serializable {
         String fileInStaging = Utils.findString(plainFileNames, fileToAdd.getName());
         //phase1, add or overwrite in the staging area for addition
         if(fileInStaging != null){
-            if(!Utils.restrictedDelete(fileToAdd)){
-                throw new GitletException("delete failure in the add command");
-            }
+            join(STAGING_ADD_DIR, fileInStaging).delete();
         }
         //write in the form of byte stream
         File newFile = join(STAGING_ADD_DIR, fileToAdd.getName());
@@ -113,7 +111,7 @@ public class Repository implements Serializable {
         File fileInCommit = head.findFile(fileToAdd.getName());
         if(fileInCommit != null){
             if(Utils.checkFilesDifference(newFile, fileInCommit)){
-                Utils.restrictedDelete(newFile);
+                newFile.delete();
             }
         }
         // TODO: for the file staged for removal
@@ -169,10 +167,10 @@ public class Repository implements Serializable {
         newCommit.CalculateID();
         //clear the staging area
         for(String fileName : Utils.plainFilenamesIn(STAGING_ADD_DIR)){
-            restrictedDelete(join(STAGING_ADD_DIR, fileName));
+            join(STAGING_ADD_DIR, fileName).delete();
         }
         for(String fileName : Utils.plainFilenamesIn(STAGING_RM_DIR)){
-            restrictedDelete(join(STAGING_RM_DIR, fileName));
+            join(STAGING_RM_DIR, fileName).delete();
         }
     }
 }

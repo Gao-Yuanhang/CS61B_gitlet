@@ -235,6 +235,9 @@ class Utils {
 
     /** lgN by bisection, input: an ordered list, output: null represents no result*/
     static String findString(List<String> stringList, String target){
+        if(stringList.size() == 0){
+            return null;
+        }
         int left = 0;
         int right = stringList.size()-1;
         while(left != right){
@@ -244,11 +247,14 @@ class Utils {
                 left = mid+1;
             }else if(stringList.get(mid).compareTo(target) > 0){
                 right = mid-1;
-            }else{
-                return stringList.get(mid);
             }
         }
-        return null;
+        if(stringList.get(left).equals(target)){
+            return target;
+        }else{
+            return null;
+        }
+
     }
 
     static boolean checkFilesDifference(File file1, File file2){
