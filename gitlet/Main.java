@@ -74,17 +74,37 @@ public class Main {
                 }
                 currentRepo.Commit(message);
                 break;
+            case "rm":
+
             case "log":
                 if(args.length != 1){
                     System.err.println("Incorrect operands.");
                     System.exit(0);
                 }
-
+                currentRepo.log();
             case "global-log":
+                if(args.length != 1){
+                    System.err.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                currentRepo.global_log();
             case "find":
+                if(args.length != 2){
+                    System.err.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                currentRepo.find(args[1]);
             case "status":
+                if(args.length != 1){
+                    System.err.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                currentRepo.status();
             case "checkout":
             case "branch":
+            case "rm-branch":
+            case "reset":
+            case "merge":
 
             default:
                 System.err.println("No command with that name exists.");

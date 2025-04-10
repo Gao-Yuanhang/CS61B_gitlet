@@ -12,4 +12,8 @@ public class Branch implements Serializable {
         this.name = name;
         this.currentCommit = commit;
     }
+
+    public String getName(){
+        return name;
+    }
 }

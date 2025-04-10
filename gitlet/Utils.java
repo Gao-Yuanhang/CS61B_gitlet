@@ -14,9 +14,11 @@ import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.List;
+import java.util.TimeZone;
 
 
 /** Assorted utilities.
@@ -270,6 +272,25 @@ class Utils {
             }
         }
         return true;
+    }
+
+    static void printCommit(Commit current){
+        System.out.println("===");
+        System.out.println("commit " + current.ID);
+
+        //merge information, first parent is the branch where you do the merge; 'git merge branchA' meaning merge branchA into current branch
+        if(current.parentCommits.size() >= 2){
+            Commit c1 = current.parentCommits.get(0);
+            Commit c2 = current.parentCommits.get(1);
+            System.out.println("merge: " + c1.ID.substring(0,7) + " " + c2.ID.substring(0,7));
+        }
+
+        //show the time of current time zone instead of standard time zone
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z");
+        sdf.setTimeZone(TimeZone.getDefault());
+        System.out.println("Date: " + sdf.format(current.timestamp));
+        System.out.println(current.message);
+        System.out.println("");
     }
 
 }

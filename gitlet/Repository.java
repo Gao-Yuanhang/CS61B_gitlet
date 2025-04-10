@@ -1,10 +1,13 @@
 package gitlet;
 
+import jdk.jshell.execution.Util;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static gitlet.Utils.*;
 
@@ -46,6 +49,9 @@ public class Repository implements Serializable {
 
     public Branch currentBranch;
 
+    /** collect all the commits, firstly, it can avoid the un-referred commit objects to be recycled*/
+    public HashSet<Commit> commits = new HashSet<>();
+
     /** get the current commit for this repository*/
     public Commit getHead(){
         return head;
@@ -80,6 +86,7 @@ public class Repository implements Serializable {
         this.addBranch("master", rootCommit);
         this.setCurrentBranch("master");
         this.head = rootCommit;
+        this.commits.add(rootCommit);
     }
 
     public void storeRepo(){
@@ -161,8 +168,8 @@ public class Repository implements Serializable {
         }
         //update head
         this.setHead(newCommit);
-        //calculate the ID for new commit
         newCommit.CalculateID();
+        this.commits.add(newCommit);
         //clear the staging area
         for(String fileName : Utils.plainFilenamesIn(STAGING_ADD_DIR)){
             join(STAGING_ADD_DIR, fileName).delete();
@@ -175,29 +182,52 @@ public class Repository implements Serializable {
     public void log(){
         Commit current = this.head;
         do{
-            System.out.println("===");
-            System.out.println("commit " + current.ID);
-
-            //merge information, first parent is the branch where you do the merge; 'git merge branchA' meaning merge branchA into current branch
-            if(current.parentCommits.size() >= 2){
-                Commit c1 = current.parentCommits.get(0);
-                Commit c2 = current.parentCommits.get(1);
-                System.out.println("merge: " + c1.ID.substring(0,7) + " " + c2.ID.substring(0,7));
-            }
-
-            //show the time of current time zone instead of standard time zone
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z");
-            sdf.setTimeZone(TimeZone.getDefault());
-            System.out.println("Date: " + sdf.format(current.timestamp));
-            System.out.println(current.message);
-            System.out.println("");
+            Utils.printCommit(current);
             current = current.parentCommits.get(0);
         }while(current.parentCommits != null);
         //TODO in the document, a commit has its successor, but why can the log command can be executed here?
     }
 
     public void global_log(){
-        //TODO maybe it doesn't fulfill the linear time complexity
+        for(Commit commit : this.commits){
+            Utils.printCommit(commit);
+        }
+    }
 
+    public void find(String message){
+        for(Commit commit : this.commits){
+            if(commit.message.equals(message)){
+                System.out.println(commit.ID);
+            }
+        }
+    }
+
+    public void status(){
+        System.out.println("=== Branches ===");
+        List<String> branches = this.branches.stream().map(Branch::getName).sorted().collect(Collectors.toList());
+        branches.stream().forEach(s -> {
+            if(s.equals(currentBranch.name)){
+                s = "*" + s;
+            }
+            System.out.println(s);
+        });
+        System.out.println("");
+
+        System.out.println("=== Staged Files ===");
+        Utils.plainFilenamesIn(STAGING_ADD_DIR).stream()
+                                               .sorted()
+                                               .forEach(System.out::println);
+        System.out.println("");
+
+        System.out.println("=== Removed Files ===");
+        Utils.plainFilenamesIn(STAGING_RM_DIR).stream()
+                .sorted()
+                .forEach(System.out::println);
+        System.out.println("");
+
+        /** TODO bonus*/
+        /** TODO end*/
+
+        System.out.println("");
     }
 }
