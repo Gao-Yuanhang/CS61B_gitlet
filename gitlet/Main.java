@@ -74,6 +74,18 @@ public class Main {
                 }
                 currentRepo.Commit(message);
                 break;
+            case "log":
+                if(args.length != 1){
+                    System.err.println("Incorrect operands.");
+                    System.exit(0);
+                }
+
+            case "global-log":
+            case "find":
+            case "status":
+            case "checkout":
+            case "branch":
+
             default:
                 System.err.println("No command with that name exists.");
                 System.exit(0);

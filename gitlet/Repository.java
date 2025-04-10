@@ -3,8 +3,8 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import static gitlet.Utils.*;
 
@@ -108,7 +108,7 @@ public class Repository implements Serializable {
         }
         writeContents(newFile, Utils.readContents(fileToAdd));
         //phase2, check if the file is identical to the current commit version, if it is, remove from the staging area
-        File fileInCommit = head.findFile(fileToAdd.getName());
+        File fileInCommit = head.findBlobFile(fileToAdd.getName());
         if(fileInCommit != null){
             if(Utils.checkFilesDifference(newFile, fileInCommit)){
                 newFile.delete();
@@ -126,16 +126,14 @@ public class Repository implements Serializable {
         //basic information for new commit
         Commit newCommit = new Commit();
         newCommit.message = message;
-        newCommit.timestamp = System.currentTimeMillis();
-        newCommit.parentCommit = head;
-        //set newCommit as the childCommit of its parent
-        head.childCommit = newCommit;
+        newCommit.timestamp = new Date();
+        newCommit.parentCommits.add(head);
         //update the blobs and tracked file names
         newCommit.tracked_file_names = head.tracked_file_names;
         newCommit.blobs = head.blobs;
         for(String fileName : Utils.plainFilenamesIn(STAGING_ADD_DIR)){
             if(head.tracked_file_names.contains(fileName)){
-                File currentVersionFile = head.findFile(fileName);
+                File currentVersionFile = head.findBlobFile(fileName);
                 newCommit.blobs.remove(currentVersionFile);
                 String currentVersionFileName = currentVersionFile.getName();
                 int versionNum = Integer.valueOf(currentVersionFileName.substring(currentVersionFileName.lastIndexOf("_")));
@@ -154,7 +152,7 @@ public class Repository implements Serializable {
         //resolve 'rm'
         for(String fileName : Utils.plainFilenamesIn(STAGING_RM_DIR)){
             if(head.tracked_file_names.contains(fileName)){
-                File currentVersionFile = head.findFile(fileName);
+                File currentVersionFile = head.findBlobFile(fileName);
                 newCommit.blobs.remove(currentVersionFile);
                 newCommit.tracked_file_names.remove(fileName);
             }else{
@@ -172,5 +170,34 @@ public class Repository implements Serializable {
         for(String fileName : Utils.plainFilenamesIn(STAGING_RM_DIR)){
             join(STAGING_RM_DIR, fileName).delete();
         }
+    }
+
+    public void log(){
+        Commit current = this.head;
+        do{
+            System.out.println("===");
+            System.out.println("commit " + current.ID);
+
+            //merge information, first parent is the branch where you do the merge; 'git merge branchA' meaning merge branchA into current branch
+            if(current.parentCommits.size() >= 2){
+                Commit c1 = current.parentCommits.get(0);
+                Commit c2 = current.parentCommits.get(1);
+                System.out.println("merge: " + c1.ID.substring(0,7) + " " + c2.ID.substring(0,7));
+            }
+
+            //show the time of current time zone instead of standard time zone
+            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z");
+            sdf.setTimeZone(TimeZone.getDefault());
+            System.out.println("Date: " + sdf.format(current.timestamp));
+            System.out.println(current.message);
+            System.out.println("");
+            current = current.parentCommits.get(0);
+        }while(current.parentCommits != null);
+        //TODO in the document, a commit has its successor, but why can the log command can be executed here?
+    }
+
+    public void global_log(){
+        //TODO maybe it doesn't fulfill the linear time complexity
+
     }
 }

@@ -26,13 +26,9 @@ public class Commit implements Serializable {
     /** The message of this Commit. */
     public String message;
 
-    public long timestamp;
-
-    /** for the unique init commit, it points to null*/
-    public Commit parentCommit;
-
-    /** when generate a new commit, set for the current commit*/
-    public Commit childCommit;
+    /** for the unique init commit, it points to null, when merging branches, one commit can have more than 1 parentCommit*/
+    /** it is ordered, first parent, second parent...*/
+    public ArrayList<Commit> parentCommits = new ArrayList<>();
 
     /** use TreeSet to assure get the same ID using sha algorithm*/
     /** reference to the saved contents of files*/
@@ -42,6 +38,9 @@ public class Commit implements Serializable {
     public TreeSet<String> tracked_file_names = new TreeSet<>();
 
     public String ID;
+
+    /** date*/
+    public Date timestamp;
 
     /** all commits in all repositories will trace back to it*/
     public static Commit RootCommit(){
@@ -57,7 +56,7 @@ public class Commit implements Serializable {
         public static RootCommit getRootCommit() {
             if(rootCommit == null){
                 rootCommit = new RootCommit();
-                rootCommit.timestamp = 0;
+                rootCommit.timestamp = new Date();
                 rootCommit.message = "initial commit";
             }
             return rootCommit;
@@ -65,7 +64,7 @@ public class Commit implements Serializable {
     }
 
     /** given a string file name, find the specific blob corresponding to it in this commit*/
-    public File findFile(String fileName){
+    public File findBlobFile(String fileName){
         if(this.tracked_file_names.contains(fileName)){
             for(File f : this.blobs){
                 String nameWithPrefix = f.getName();
@@ -81,7 +80,7 @@ public class Commit implements Serializable {
     public void CalculateID(){
         //SHA-1 ID must include the file references, parent reference, log message and commit time
         // TODO: what if parentCommit be null, how to convert long type(timestamp) to byte[]
-        this.ID = Utils.sha1(Utils.serialize(blobs), Utils.serialize(parentCommit), message, String.valueOf(timestamp));
+        this.ID = Utils.sha1(Utils.serialize(blobs), Utils.serialize(parentCommits), message, String.valueOf(timestamp));
     }
 
 
