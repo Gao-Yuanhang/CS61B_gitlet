@@ -293,4 +293,13 @@ class Utils {
         System.out.println("");
     }
 
+    static void clearDirectory(File f){
+        if(!f.isDirectory()){
+            System.out.println("error in clearDirectory");
+        }
+        for(File file : f.listFiles()){
+            file.delete();
+        }
+    }
+
 }

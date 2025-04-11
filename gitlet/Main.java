@@ -112,7 +112,17 @@ public class Main {
                     System.exit(0);
                 }
             case "branch":
+                if(args.length != 2){
+                    System.err.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                currentRepo.branch(args[1]);
             case "rm-branch":
+                if(args.length != 2){
+                    System.err.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                currentRepo.rm_branch(args[1]);
             case "reset":
             case "merge":
 

@@ -284,9 +284,7 @@ public class Repository implements Serializable {
             //switch the branch
             setCurrentBranch(branchName);
             //clear the working directory
-            for(File f : CWD.listFiles()){
-                f.delete();
-            }
+            Utils.clearDirectory(CWD);
             //load the files in the head of the new branch
             for(File blobFile : getHead().blobs){
                 String nameWithPrefix = blobFile.getName();
@@ -294,6 +292,32 @@ public class Repository implements Serializable {
                 File newFile = join(CWD, nameWithoutPrefix);
                 Utils.writeContents(newFile, readContents(blobFile));
             }
+            //clear the staging area
+            Utils.clearDirectory(STAGING_ADD_DIR);
+            Utils.clearDirectory(STAGING_RM_DIR);
         }
+    }
+
+    public void branch(String branchName){
+        if(branches.stream().map(Branch::getName).collect(Collectors.toSet()).contains(branchName)){
+            System.err.println("A branch with that name already exists.");
+            System.exit(0);
+        }
+        branches.add(new Branch(branchName, getHead()));
+    }
+
+    public void rm_branch(String branchName){
+        if(branchName.equals(currentBranch.name)){
+            System.err.println("Cannot remove the current branch.");
+            System.exit(0);
+        }
+        for(Branch b : branches){
+            if(b.name.equals(branchName)){
+                branches.remove(b);
+                return;
+            }
+        }
+        System.err.println("A branch with that name does not exist.");
+        System.exit(0);
     }
 }
