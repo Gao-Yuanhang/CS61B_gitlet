@@ -43,8 +43,6 @@ public class Repository implements Serializable {
     /** store all the blobs, add suffix '_ + number' to distinguish different versions*/
     public static final File BLOB_DIR = join(GITLET_DIR, "blobs");
 
-    public Commit head;
-
     public ArrayList<Branch> branches = new ArrayList<>();
 
     public Branch currentBranch;
@@ -54,13 +52,14 @@ public class Repository implements Serializable {
 
     /** get the current commit for this repository*/
     public Commit getHead(){
-        return head;
+        return currentBranch.currentCommit;
     }
 
     public void addBranch(String branchName, Commit currentCommit){
         branches.add(new Branch(branchName, currentCommit));
     }
 
+    /** called when creating or checking out branch*/
     public void setCurrentBranch(String branchName){
         for(Branch branch : branches){
             if(branch.name.equals(branchName)){
@@ -71,11 +70,9 @@ public class Repository implements Serializable {
         throw new GitletException("no such branch");
     }
 
-    /** called when committing, head for the repository and for branch both need to change
-     * 'this.head = this.currentBranch.currentCommit' is an invariant*/
+    /** called when committing*/
     public void setHead(Commit nextCommit){
         this.currentBranch.currentCommit = nextCommit;
-        this.head = this.currentBranch.currentCommit;
     }
 
     public void initRepository(Commit rootCommit){
@@ -85,7 +82,6 @@ public class Repository implements Serializable {
         Repository.BLOB_DIR.mkdirs();
         this.addBranch("master", rootCommit);
         this.setCurrentBranch("master");
-        this.head = rootCommit;
         this.commits.add(rootCommit);
     }
 
@@ -115,7 +111,7 @@ public class Repository implements Serializable {
         }
         writeContents(newFile, Utils.readContents(fileToAdd));
         //phase2, check if the file is identical to the current commit version, if it is, remove from the staging area
-        File fileInCommit = head.findBlobFile(fileToAdd.getName());
+        File fileInCommit = getHead().findBlobFile(fileToAdd.getName());
         if(fileInCommit != null){
             if(Utils.checkFilesDifference(newFile, fileInCommit)){
                 newFile.delete();
@@ -134,13 +130,13 @@ public class Repository implements Serializable {
         Commit newCommit = new Commit();
         newCommit.message = message;
         newCommit.timestamp = new Date();
-        newCommit.parentCommits.add(head);
+        newCommit.parentCommits.add(getHead());
         //update the blobs and tracked file names
-        newCommit.tracked_file_names = head.tracked_file_names;
-        newCommit.blobs = head.blobs;
+        newCommit.tracked_file_names = getHead().tracked_file_names;
+        newCommit.blobs = getHead().blobs;
         for(String fileName : Utils.plainFilenamesIn(STAGING_ADD_DIR)){
-            if(head.tracked_file_names.contains(fileName)){
-                File currentVersionFile = head.findBlobFile(fileName);
+            if(getHead().tracked_file_names.contains(fileName)){
+                File currentVersionFile = getHead().findBlobFile(fileName);
                 newCommit.blobs.remove(currentVersionFile);
                 String currentVersionFileName = currentVersionFile.getName();
                 int versionNum = Integer.valueOf(currentVersionFileName.substring(currentVersionFileName.lastIndexOf("_")));
@@ -158,8 +154,8 @@ public class Repository implements Serializable {
         }
         //resolve 'rm'
         for(String fileName : Utils.plainFilenamesIn(STAGING_RM_DIR)){
-            if(head.tracked_file_names.contains(fileName)){
-                File currentVersionFile = head.findBlobFile(fileName);
+            if(getHead().tracked_file_names.contains(fileName)){
+                File currentVersionFile = getHead().findBlobFile(fileName);
                 newCommit.blobs.remove(currentVersionFile);
                 newCommit.tracked_file_names.remove(fileName);
             }else{
@@ -180,7 +176,7 @@ public class Repository implements Serializable {
     }
 
     public void log(){
-        Commit current = this.head;
+        Commit current = getHead();
         do{
             Utils.printCommit(current);
             current = current.parentCommits.get(0);
@@ -226,8 +222,78 @@ public class Repository implements Serializable {
         System.out.println("");
 
         /** TODO bonus*/
+
         /** TODO end*/
 
         System.out.println("");
+    }
+
+    public void checkout_files(String filename){
+        File blobFile = this.getHead().findBlobFile(filename);
+        aux_checkout(filename, blobFile);
+    }
+
+    public void checkout_files_byID(String ID, String filename){
+        List<Commit> commits = this.commits.stream()
+                .filter(c -> c.ID.substring(0,6).equals(ID))
+                .collect(Collectors.toList());
+        if(commits.size() == 0){
+            System.err.println("No commit with that id exists.");
+            System.exit(0);
+        }else{
+            Commit commit = commits.get(0);
+            File blobFile = commit.findBlobFile(filename);
+            aux_checkout(filename, blobFile);
+        }
+    }
+
+    private void aux_checkout(String filename, File blobFile) {
+        if(blobFile == null){
+            System.err.println("File does not exist in that commit.");
+            System.exit(0);
+        }else{
+            File fileToWrite = join(CWD, filename);
+            //overwrite
+            if(fileToWrite.exists())
+                fileToWrite.delete();
+            Utils.writeContents(fileToWrite, readContents(blobFile));
+        }
+    }
+
+    public void checkout_branch(String branchName){
+        if(!this.branches.stream().map(Branch::getName).collect(Collectors.toSet()).contains(branchName)){
+            System.err.println("No such branch exists.");
+            System.exit(0);
+        }else{
+            if(currentBranch.name.equals(branchName)){
+                System.err.println("No need to checkout the current branch.");
+                System.exit(0);
+            }
+            //check if there are untracked files
+            //TODO here we only focus on the files not in current commit? if it is modified but not staged or committed, it is totally OK?
+            HashSet<String> fileNamesTracked = new HashSet<>();
+            for(File blobFile : getHead().blobs){
+                String nameWithPrefix = blobFile.getName();
+                String nameWithoutPrefix = nameWithPrefix.substring(0, nameWithPrefix.lastIndexOf("_"));//the original name of the file
+                fileNamesTracked.add(nameWithoutPrefix);
+            }
+            if(!fileNamesTracked.containsAll(Utils.plainFilenamesIn(CWD))){
+                System.err.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                System.exit(0);
+            }
+            //switch the branch
+            setCurrentBranch(branchName);
+            //clear the working directory
+            for(File f : CWD.listFiles()){
+                f.delete();
+            }
+            //load the files in the head of the new branch
+            for(File blobFile : getHead().blobs){
+                String nameWithPrefix = blobFile.getName();
+                String nameWithoutPrefix = nameWithPrefix.substring(0, nameWithPrefix.lastIndexOf("_"));
+                File newFile = join(CWD, nameWithoutPrefix);
+                Utils.writeContents(newFile, readContents(blobFile));
+            }
+        }
     }
 }

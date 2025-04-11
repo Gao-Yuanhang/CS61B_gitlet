@@ -101,6 +101,16 @@ public class Main {
                 }
                 currentRepo.status();
             case "checkout":
+                if(args.length == 2){
+                    currentRepo.checkout_branch(args[1]);
+                }else if(args.length == 3){
+                    currentRepo.checkout_files(args[2]);
+                }else if(args.length == 4){
+                    currentRepo.checkout_files_byID(args[1], args[3]);
+                }else{
+                    System.err.println("Incorrect operands.");
+                    System.exit(0);
+                }
             case "branch":
             case "rm-branch":
             case "reset":
