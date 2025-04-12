@@ -97,9 +97,21 @@ git commit message 规范
 
 
 
+当前仓库唯一的head 一定是当前分支的head
 
+但分支没有之前所想象的重要/强大，分支（的head）本质只是一个指向commit的名字，是暂时的
 
+但commit是一经提交不会改变的 除非由于没有东西（分支，tag，head）引用它导致丢失（一经离开，切换到其它commit就无法再找到这个commit）这个commit最终被垃圾回收
 
+**track一个分支的历史是完全没有意义的**，对一个branch来说只有head是有用的，它曾经head指向过谁完全没有意义
+
+在正常的提交路径下，一个分支的历史比如是从主干分出、单独开发、合并回去的清晰路径
+
+但假如把当前分支的head指向一个与该分支毫无关系的commit上也完全没有问题
+
+​	如main和dev分支的head为c1，c2，将main的head切换到c2，OK，当前分支还是main，进行一次新提交得到commit c3，此时当前分支为main，c3的parent是c2（commit tree是immutable的），当前分支的head是c3，这是完全合法的
+
+但此时的问题是，原本head指向的c1没有被任何东西引用，它会被垃圾回收
 
 
 

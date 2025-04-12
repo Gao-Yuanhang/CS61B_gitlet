@@ -269,32 +269,11 @@ public class Repository implements Serializable {
                 System.err.println("No need to checkout the current branch.");
                 System.exit(0);
             }
-            //check if there are untracked files
-            //TODO here we only focus on the files not in current commit? if it is modified but not staged or committed, it is totally OK?
-            HashSet<String> fileNamesTracked = new HashSet<>();
-            for(File blobFile : getHead().blobs){
-                String nameWithPrefix = blobFile.getName();
-                String nameWithoutPrefix = nameWithPrefix.substring(0, nameWithPrefix.lastIndexOf("_"));//the original name of the file
-                fileNamesTracked.add(nameWithoutPrefix);
-            }
-            if(!fileNamesTracked.containsAll(Utils.plainFilenamesIn(CWD))){
-                System.err.println("There is an untracked file in the way; delete it, or add and commit it first.");
-                System.exit(0);
-            }
+            //checkout of files tracked in this commit
+            Commit commit = getHead();
+            checkoutCommit(commit);
             //switch the branch
             setCurrentBranch(branchName);
-            //clear the working directory
-            Utils.clearDirectory(CWD);
-            //load the files in the head of the new branch
-            for(File blobFile : getHead().blobs){
-                String nameWithPrefix = blobFile.getName();
-                String nameWithoutPrefix = nameWithPrefix.substring(0, nameWithPrefix.lastIndexOf("_"));
-                File newFile = join(CWD, nameWithoutPrefix);
-                Utils.writeContents(newFile, readContents(blobFile));
-            }
-            //clear the staging area
-            Utils.clearDirectory(STAGING_ADD_DIR);
-            Utils.clearDirectory(STAGING_RM_DIR);
         }
     }
 
@@ -319,5 +298,47 @@ public class Repository implements Serializable {
         }
         System.err.println("A branch with that name does not exist.");
         System.exit(0);
+    }
+
+    public void reset(String ID){
+        List<Commit> commits = this.commits.stream()
+                .filter(c -> c.ID.substring(0,6).equals(ID))
+                .collect(Collectors.toList());
+        if(commits.size() == 0){
+            System.err.println("No commit with that id exists.");
+            System.exit(0);
+        }else{
+            Commit commit = commits.get(0);
+            checkoutCommit(commit);
+            //set head for current branch
+            currentBranch.currentCommit = commit;
+        }
+    }
+
+    public void checkoutCommit(Commit commit){
+        //check if there are untracked files
+        //TODO here we only focus on the files not in current commit? if it is modified but not staged or committed, it is totally OK?
+        HashSet<String> fileNamesTracked = new HashSet<>();
+        for(File blobFile : commit.blobs){
+            String nameWithPrefix = blobFile.getName();
+            String nameWithoutPrefix = nameWithPrefix.substring(0, nameWithPrefix.lastIndexOf("_"));//the original name of the file
+            fileNamesTracked.add(nameWithoutPrefix);
+        }
+        if(!fileNamesTracked.containsAll(Utils.plainFilenamesIn(CWD))){
+            System.err.println("There is an untracked file in the way; delete it, or add and commit it first.");
+            System.exit(0);
+        }
+        //clear the working directory
+        Utils.clearDirectory(CWD);
+        //load the files in the head of the new branch
+        for(File blobFile : commit.blobs){
+            String nameWithPrefix = blobFile.getName();
+            String nameWithoutPrefix = nameWithPrefix.substring(0, nameWithPrefix.lastIndexOf("_"));
+            File newFile = join(CWD, nameWithoutPrefix);
+            Utils.writeContents(newFile, readContents(blobFile));
+        }
+        //clear the staging area
+        Utils.clearDirectory(STAGING_ADD_DIR);
+        Utils.clearDirectory(STAGING_RM_DIR);
     }
 }
