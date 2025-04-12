@@ -158,8 +158,6 @@ public class Repository implements Serializable {
                 File currentVersionFile = getHead().findBlobFile(fileName);
                 newCommit.blobs.remove(currentVersionFile);
                 newCommit.tracked_file_names.remove(fileName);
-            }else{
-                // TODO: should be an error?
             }
         }
         //update head
@@ -172,6 +170,39 @@ public class Repository implements Serializable {
         }
         for(String fileName : Utils.plainFilenamesIn(STAGING_RM_DIR)){
             join(STAGING_RM_DIR, fileName).delete();
+        }
+    }
+
+    public void rm(String fileName){
+        File fileToRm = new File(fileName);
+        if(!fileToRm.exists())
+            return;
+        //flag indicating if some operations are done
+        boolean flag = false;
+        for(File f : STAGING_ADD_DIR.listFiles()){
+            if(f.equals(fileToRm)){
+                f.delete();
+                flag = true;
+            }
+            //according to the description, if the file is staged but not tracked, it will not be deleted from CWD, only the copy in staging area will get deleted
+        }
+        //if it is neither staged nor tracked by head print error
+        if(!getHead().tracked_file_names.contains(fileName) && !flag){
+            System.err.println("No reason to remove the file.");
+            System.exit(0);
+        }else{
+            //just use the file to record the name of files to remove, no contents will be written
+            File f = join(STAGING_RM_DIR, fileName);
+            if(!f.exists()){
+				try {
+					f.createNewFile();
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			}
+            File fileInCWD = join(CWD, fileName);
+            if(fileInCWD.exists())
+                fileInCWD.delete();
         }
     }
 

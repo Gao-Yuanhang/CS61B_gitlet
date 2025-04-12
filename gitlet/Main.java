@@ -75,7 +75,11 @@ public class Main {
                 currentRepo.Commit(message);
                 break;
             case "rm":
-
+                if(args.length != 2){
+                    System.err.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                currentRepo.rm(args[1]);
             case "log":
                 if(args.length != 1){
                     System.err.println("Incorrect operands.");
@@ -124,6 +128,11 @@ public class Main {
                 }
                 currentRepo.rm_branch(args[1]);
             case "reset":
+                if(args.length != 2){
+                    System.err.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                currentRepo.reset(args[1]);
             case "merge":
 
             default:
