@@ -72,7 +72,7 @@ public class Main {
                     System.err.println("Please enter a commit message.");
                     System.exit(0);
                 }
-                currentRepo.Commit(message);
+                currentRepo.commit(message);
                 break;
             case "rm":
                 if(args.length != 2){
@@ -134,7 +134,11 @@ public class Main {
                 }
                 currentRepo.reset(args[1]);
             case "merge":
-
+                if(args.length != 2){
+                    System.err.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                currentRepo.merge(args[1]);
             default:
                 System.err.println("No command with that name exists.");
                 System.exit(0);

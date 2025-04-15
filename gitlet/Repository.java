@@ -2,10 +2,7 @@ package gitlet;
 
 import jdk.jshell.execution.Util;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.text.SimpleDateFormat;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -120,7 +117,7 @@ public class Repository implements Serializable {
         // TODO: for the file staged for removal
     }
 
-    public void Commit(String message){
+    public void commit(String message){
         //resolve failure cases
         if(Utils.plainFilenamesIn(STAGING_ADD_DIR).isEmpty() && Utils.plainFilenamesIn(STAGING_RM_DIR).isEmpty()){
             System.err.println("No changes added to the commit.");
@@ -372,4 +369,142 @@ public class Repository implements Serializable {
         Utils.clearDirectory(STAGING_ADD_DIR);
         Utils.clearDirectory(STAGING_RM_DIR);
     }
+
+    /** Merges files from the given branch into the current branch.*/
+    public void merge(String branchName){
+        if(STAGING_ADD_DIR.listFiles().length!=0 || STAGING_RM_DIR.listFiles().length!=0){
+            System.err.println("You have uncommitted changes.");
+            System.exit(0);
+        }
+        Branch givenBranch = null;
+        for(Branch b : branches){
+            if(b.name.equals(branchName))
+                givenBranch = b;
+        }
+        if(givenBranch == null){
+            System.err.println("A branch with that name does not exist.");
+            System.exit(0);
+        }
+        if(currentBranch.getName().equals(branchName)){
+            System.err.println("Cannot merge a branch with itself.");
+            System.exit(0);
+        }
+        Commit givenCommit = givenBranch.currentCommit;
+        Commit currentCommit = getHead();
+        Commit splitPoint = currentCommit.findSplitPoint(givenCommit);
+        if(splitPoint.equals(givenCommit)){
+            //do nothing, because given branch is totally older than current branch
+            System.out.println("Given branch is an ancestor of the current branch.");
+            System.exit(0);
+        }
+        if(splitPoint.equals(currentCommit)){
+            //checkout the given branch, because given commit is totally evolved based on current commit
+            checkout_branch(branchName);
+            System.out.println("Current branch fast-forwarded.");
+            System.exit(0);
+        }
+        //the else case, A as currentCommit, B as givenCommit, and will generate a new mergedCommit
+        // *we will not construct a merged commit directly, instead, we just operate the staging area by 'add' and 'rm' commands, and call 'commit' finally
+        // in this way, we can let the normal commit error message go through(e.g. when merge get no changes, no mergedCommit will be generated
+
+        //Part 1: considering files in currentCommit
+        for(String fileName : currentCommit.tracked_file_names){
+            boolean modifiedByA = currentCommit.fileModifiedFrom(fileName, splitPoint);
+            if(givenCommit.tracked_file_names.contains(fileName)){
+                //cases that both modified or both added, it doesn't matter that if splitPoint has that file
+                boolean modifiedByB = givenCommit.fileModifiedFrom(fileName, splitPoint);
+                if(modifiedByA && modifiedByB){
+                    File fileInA = currentCommit.findBlobFile(fileName);
+                    File fileInB = givenCommit.findBlobFile(fileName);
+                    if(Utils.checkFilesDifference(fileInA, fileInB)){
+                        //case 3, do nothing
+                    }else{
+                        //write conflict file
+                        File conflictFile = join(CWD, fileName);
+                        Utils.writeFile(conflictFile, "<<<<<<< HEAD\n");
+                        Utils.appendFile(currentCommit.findBlobFile(fileName), conflictFile);
+                        Utils.writeFile(conflictFile, "=======\n");
+                        Utils.appendFile(givenCommit.findBlobFile(fileName), conflictFile);
+                        Utils.writeFile(conflictFile, ">>>>>>>\n");
+                        add(conflictFile);
+                        System.out.println("Encountered a merge conflict.");
+                    }
+                }else if(!modifiedByA && modifiedByB){
+                    //case 1
+                    checkout_files_byID(givenCommit.ID.substring(0,6), fileName);
+                    add(join(CWD, fileName));
+                }else{
+                    //only A modified or both A and B unmodified, do nothing
+                }
+            }else if(!givenCommit.tracked_file_names.contains(fileName) && splitPoint.tracked_file_names.contains(fileName)){
+                //meaning B remove the file, depending on whether A is modified
+                if(!modifiedByA){
+                    //case 7, it should be absent after merging
+                    rm(fileName);
+                }else{
+                    //conflict regarding a absent file(A modified while B removed)
+                    //write conflict file
+                    File conflictFile = join(CWD, fileName);
+                    Utils.writeFile(conflictFile, "<<<<<<< HEAD\n");
+                    Utils.appendFile(currentCommit.findBlobFile(fileName), conflictFile);
+                    Utils.writeFile(conflictFile, "=======\n");
+                    Utils.writeFile(conflictFile, ">>>>>>>\n");
+                    add(conflictFile);
+                    System.out.println("Encountered a merge conflict.");
+                }
+            }else{
+                //B and splitPoint don't have the file, which is added by only A, do nothing
+            }
+        }
+
+        //Part2: considering files not in currentCommit
+        HashSet<String> filesInBOrSplit = new HashSet<>(splitPoint.tracked_file_names);
+        filesInBOrSplit.addAll(givenCommit.tracked_file_names);
+        for(String filename : givenCommit.tracked_file_names){
+            if(currentCommit.tracked_file_names.contains(filename))
+                continue;
+            if(splitPoint.tracked_file_names.contains(filename) && givenCommit.tracked_file_names.contains(filename)){
+                if(givenCommit.fileModifiedFrom(filename, splitPoint)){
+                    //A deleted and B modified
+                    File conflictFile = join(CWD, filename);
+                    Utils.writeFile(conflictFile, "<<<<<<< HEAD\n");
+                    Utils.writeFile(conflictFile, "=======\n");
+                    Utils.appendFile(currentCommit.findBlobFile(filename), conflictFile);
+                    Utils.writeFile(conflictFile, ">>>>>>>\n");
+                    add(conflictFile);
+                    System.out.println("Encountered a merge conflict.");
+                }
+            }else if(!splitPoint.tracked_file_names.contains(filename) && givenCommit.tracked_file_names.contains(filename)){
+                //case 5
+                checkout_files_byID(givenCommit.ID.substring(0,6), filename);
+                add(join(CWD, filename));
+            }else{
+                //meaning both A and B removed the file, do nothing
+            }
+        }
+        commit("Merged "+ branchName +" into " + currentBranch.getName() + ".");
+
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

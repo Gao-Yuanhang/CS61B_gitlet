@@ -4,9 +4,7 @@ package gitlet;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date; // TODO: You'll likely use this in this class
-import java.util.TreeSet;
+import java.util.*;
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -83,6 +81,59 @@ public class Commit implements Serializable {
         this.ID = Utils.sha1(Utils.serialize(blobs), Utils.serialize(parentCommits), message, String.valueOf(timestamp));
     }
 
+    /** find the splitPoint(the latest common ancestor) of current head and givenCommit(the head of the given branch)*/
+    public Commit findSplitPoint(Commit givenCommit){
+        HashSet<Commit> currentAncestors = this.findAncestors();
+        HashSet<Commit> givenAncestors = givenCommit.findAncestors();
+        currentAncestors.retainAll(givenAncestors);
+        Commit splitPoint = null;
+        for(Commit c : currentAncestors){
+            if(splitPoint == null)
+                splitPoint = c;
+            if(c.timestamp.after(splitPoint.timestamp))
+                splitPoint = c;
+        }
+        return splitPoint;
+    }
 
-    /* TODO: fill in the rest of this class. */
+
+    /** use a dfs traverse, instead of a linkedList, the reason refers to the example in the document.*/
+    private HashSet<Commit> findAncestors(){
+        HashSet<Commit> result = new HashSet<>();
+        Stack<Commit> stack = new Stack<>();
+        stack.push(this);
+        while(!stack.empty()){
+            Commit temp = stack.pop();
+            result.add(temp);
+            for(Commit c : temp.parentCommits){
+                stack.push(c);
+            }
+        }
+        return result;
+    }
+
+    /** check if a file is modified in current commit compared with the given commit; precondition: the file is tracked by current commit.*/
+    public boolean fileModifiedFrom(String fileName, Commit ancestor){
+        if(!ancestor.tracked_file_names.contains(fileName)){
+            //the file is added
+            return true;
+        }
+        int oldVersion = ancestor.getVersion(fileName);
+        int newVersion = this.getVersion(fileName);
+        assert (oldVersion <= newVersion);
+        return (oldVersion < newVersion);
+    }
+
+    /** get the version of a file in the blob for this commit, precondition: the file is tracked by current commit*/
+    private int getVersion(String fileName){
+        for(File f : this.blobs){
+            String nameWithPrefix = f.getName();
+            String nameWithoutPrefix = nameWithPrefix.substring(0, nameWithPrefix.lastIndexOf("_"));
+            if(nameWithoutPrefix.equals(fileName)){
+                int version = Integer.valueOf(nameWithPrefix.substring(nameWithPrefix.lastIndexOf("_")+1));
+                return version;
+            }
+        }
+        return -10;
+    }
 }

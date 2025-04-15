@@ -1,17 +1,10 @@
 package gitlet;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
@@ -299,6 +292,33 @@ class Utils {
         }
         for(File file : f.listFiles()){
             file.delete();
+        }
+    }
+
+    static void writeFile(File file, String content){
+        try (FileWriter fw = new FileWriter(file, true);
+             BufferedWriter bw = new BufferedWriter(fw)) {
+            bw.write(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void appendFile(File source, File target) {
+        try (InputStream in = new FileInputStream(source);
+             OutputStream out = Files.newOutputStream(
+                     target.toPath(),
+                     StandardOpenOption.CREATE,
+                     StandardOpenOption.APPEND)) {
+
+            byte[] buffer = new byte[4096];
+            int len;
+            while ((len = in.read(buffer)) != -1) {
+                out.write(buffer, 0, len);
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException("Error appending file content", e);
         }
     }
 
