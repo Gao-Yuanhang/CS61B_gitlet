@@ -115,23 +115,48 @@ git commit message 规范
 
 
 
+![image-20250414230703471](gitlet-design.assets/image-20250414230703471.png)
+
+
+
+在E执行gitlet merge branchD,则此时G的parentCommits第一个是E第二个是D
+
+如果链状回溯（像log时一样只取第一个） 得到的split point就是A，但实际上应该是D
+
+因此findAncestor应该用类似dfs的方法
+
+
+
+mechanism for merge
+
+<img src="gitlet-design.assets/image-20250415001900602.png" alt="image-20250415001900602" style="zoom:50%;" />
+
+这里add by both A and B 与 modified by both 可以应用同样的逻辑
+
+
+
+```
+HashSet<String> filesAddedByA = new HashSet<>(currentCommit.tracked_file_names);
+        filesAddedByA.removeAll(splitPoint.tracked_file_names);
+        HashSet<String> filesAddedByB = new HashSet<>(givenCommit.tracked_file_names);
+        filesAddedByB.removeAll(splitPoint.tracked_file_names);
+        HashSet<String> filesAddedByAandB = new HashSet<>(filesAddedByA);
+        filesAddedByAandB.retainAll(filesAddedByB);
+        //(A union B) - (A intersect B)
+        HashSet<String> filesAddedByOnlyAorB = new HashSet<>(filesAddedByA);
+        filesAddedByOnlyAorB.addAll(filesAddedByB);
+        filesAddedByOnlyAorB.removeAll(filesAddedByAandB);
+```
 
 
 
 
 
+感觉是不是checkout一个branch的时候才会有这个提示"There is an untracked file in the way; delete it, or add and commit it first."
 
+因为merge中调用了checkoutBranch的代码 所以它的这个提示也来源于这里
 
-
-
-
-
-
-
-
-
-
-AI 和 autodriving的结合
+merge考虑的一直是A、B、splitPoint的blob（tracked files）之间的关系，一个untracked file并不会因为这些操作被删除吧
 
 
 
