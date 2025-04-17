@@ -8,10 +8,7 @@ import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Formatter;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 
 /** Assorted utilities.
@@ -279,7 +276,7 @@ class Utils {
         }
 
         //show the time of current time zone instead of standard time zone
-        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z");
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", new Locale("ENGLISH"));
         sdf.setTimeZone(TimeZone.getDefault());
         System.out.println("Date: " + sdf.format(current.timestamp));
         System.out.println(current.message);

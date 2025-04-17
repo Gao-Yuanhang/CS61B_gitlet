@@ -23,7 +23,9 @@ public class Main {
             System.exit(0);
         }
         String firstArg = args[0];
-        if(!firstArg.equals("init")){
+        //when there is a repository(i.e. a serialized object), and code is changed, the local class will be incompatible
+        //and 'clear' command has to be executed
+        if(!firstArg.equals("init") && !firstArg.equals("clear")){
             File folder = Repository.GITLET_DIR;
             if (!folder.exists() || !folder.isDirectory()){
                 System.err.println("Not in an initialized Gitlet directory.");
@@ -80,30 +82,35 @@ public class Main {
                     System.exit(0);
                 }
                 currentRepo.rm(args[1]);
+                break;
             case "log":
                 if(args.length != 1){
                     System.err.println("Incorrect operands.");
                     System.exit(0);
                 }
                 currentRepo.log();
+                break;
             case "global-log":
                 if(args.length != 1){
                     System.err.println("Incorrect operands.");
                     System.exit(0);
                 }
                 currentRepo.global_log();
+                break;
             case "find":
                 if(args.length != 2){
                     System.err.println("Incorrect operands.");
                     System.exit(0);
                 }
                 currentRepo.find(args[1]);
+                break;
             case "status":
                 if(args.length != 1){
                     System.err.println("Incorrect operands.");
                     System.exit(0);
                 }
                 currentRepo.status();
+                break;
             case "checkout":
                 if(args.length == 2){
                     currentRepo.checkout_branch(args[1]);
@@ -115,30 +122,40 @@ public class Main {
                     System.err.println("Incorrect operands.");
                     System.exit(0);
                 }
+                break;
             case "branch":
                 if(args.length != 2){
                     System.err.println("Incorrect operands.");
                     System.exit(0);
                 }
                 currentRepo.branch(args[1]);
+                break;
             case "rm-branch":
                 if(args.length != 2){
                     System.err.println("Incorrect operands.");
                     System.exit(0);
                 }
                 currentRepo.rm_branch(args[1]);
+                break;
             case "reset":
                 if(args.length != 2){
                     System.err.println("Incorrect operands.");
                     System.exit(0);
                 }
                 currentRepo.reset(args[1]);
+                break;
             case "merge":
                 if(args.length != 2){
                     System.err.println("Incorrect operands.");
                     System.exit(0);
                 }
                 currentRepo.merge(args[1]);
+                break;
+            case "clear":
+                //TODO used only in debugging
+                deleteNonBatFiles(Repository.CWD);
+                System.exit(0);
+                break;
             default:
                 System.err.println("No command with that name exists.");
                 System.exit(0);
@@ -149,6 +166,20 @@ public class Main {
             currentRepo.storeRepo();
         }else{
             throw new GitletException("have not set the currentRepo");
+        }
+    }
+
+    public static void deleteNonBatFiles(File dir) {
+        File[] files = dir.listFiles();
+        if (files == null)
+            return;
+        for (File file : files) {
+            if (file.isDirectory()) {
+                deleteNonBatFiles(file);
+                file.delete();
+            } else if (!file.getName().endsWith(".bat")) {
+                file.delete();
+            }
         }
     }
 }

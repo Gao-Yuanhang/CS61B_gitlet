@@ -125,7 +125,7 @@ public class Commit implements Serializable {
     }
 
     /** get the version of a file in the blob for this commit, precondition: the file is tracked by current commit*/
-    private int getVersion(String fileName){
+    public int getVersion(String fileName){
         for(File f : this.blobs){
             String nameWithPrefix = f.getName();
             String nameWithoutPrefix = nameWithPrefix.substring(0, nameWithPrefix.lastIndexOf("_"));

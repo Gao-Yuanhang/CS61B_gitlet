@@ -1,7 +1,5 @@
 package gitlet;
 
-import jdk.jshell.execution.Util;
-
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -128,15 +126,16 @@ public class Repository implements Serializable {
         newCommit.message = message;
         newCommit.timestamp = new Date();
         newCommit.parentCommits.add(getHead());
-        //update the blobs and tracked file names
-        newCommit.tracked_file_names = getHead().tracked_file_names;
-        newCommit.blobs = getHead().blobs;
+        //when inherit [tracked_file_names] and [blobs] from parent commit
+        //a copy construction instead of a (reference) assignment is needed!
+        newCommit.tracked_file_names = new TreeSet<>(getHead().tracked_file_names);
+        newCommit.blobs = new TreeSet<>(getHead().blobs);
+
         for(String fileName : Utils.plainFilenamesIn(STAGING_ADD_DIR)){
             if(getHead().tracked_file_names.contains(fileName)){
                 File currentVersionFile = getHead().findBlobFile(fileName);
                 newCommit.blobs.remove(currentVersionFile);
-                String currentVersionFileName = currentVersionFile.getName();
-                int versionNum = Integer.valueOf(currentVersionFileName.substring(currentVersionFileName.lastIndexOf("_")));
+                int versionNum = getHead().getVersion(fileName);
                 versionNum++;
                 //generate a new version of the file, and replace the old version
                 File newBlob = join(BLOB_DIR, fileName+"_"+String.valueOf(versionNum));
@@ -208,8 +207,8 @@ public class Repository implements Serializable {
         do{
             Utils.printCommit(current);
             current = current.parentCommits.get(0);
-        }while(current.parentCommits != null);
-        //TODO in the document, a commit has its successor, but why can the log command can be executed here?
+        }while(current.parentCommits.size() != 0);
+        Utils.printCommit(current);
     }
 
     public void global_log(){

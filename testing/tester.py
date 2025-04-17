@@ -358,7 +358,7 @@ def doTest(test):
                 if msg == "OK":
                     if not correctProgramOutput(expected, out, last_groups,
                                                 is_regexp):
-                        msg = "incorrect output"
+                        msg = "incorrect output with real output [" + out + "]"
                 if msg != "OK":
                     print("ERROR ({})".format(msg))
                     reportDetails(test, included_files, line_num)
@@ -446,10 +446,8 @@ if __name__ == "__main__":
     if ON_WINDOWS:
         if 'CLASSPATH' in environ:
             environ['CLASSPATH'] = "{};{}".format(prog_dir, environ['CLASSPATH'])
-            print("1ssssss"+environ['CLASSPATH'])
         else:
             environ['CLASSPATH'] = "{}".format(prog_dir)
-            print("1yyyyyyyy"+environ['CLASSPATH'])
     else:
         if 'CLASSPATH' in environ:
             environ['CLASSPATH'] = "{}:{}".format(prog_dir, environ['CLASSPATH'])
@@ -464,6 +462,7 @@ if __name__ == "__main__":
     for test in files:
         try:
             if not exists(test):
+                print('not a filessss')
                 num_tests -= 1
             elif not doTest(test):
                 errs += 1
