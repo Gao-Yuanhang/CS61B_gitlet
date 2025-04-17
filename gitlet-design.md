@@ -61,7 +61,25 @@ java -cp D:\2024\CS61B_projects\CS61B_gitlet gitlet.Main
 
 
 
+
+
+```
+python tester.py --verbose ./samples/test04-prev-checkout.in
+该命令有效，用于指定某一个测试而不是用make check执行所有测试
+会单独新建一个暂时的文件夹，可以重复执行
+windows下路径用反斜杠分隔，但因为转义问题（e.g. \n）使用正斜杠更好
+```
+
 in the run configuration page, set working directory and debug
+
+
+
+**目前具有四种执行/debug方式**
+
+- 在IDE里触发 设置工作目录与参数，逐步调试
+- 将java的main class注册到系统变量中，在任何目录打开命令行用如gitlet init的命令即可执行，**修改代码后要编译！**
+- python tester.py --verbose FILE.in 的方式执行单个集成测试  **修改代码后要编译！**
+- make default/check 执行全部集成测试  **修改代码后要编译！**
 
 
 
