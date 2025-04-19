@@ -2,36 +2,14 @@
 
 **Name**:
 
-## Classes and Data Structures
-
-### Class 1
-
-#### Fields
-
-1. Field 1
-2. Field 2
 
 
-### Class 2
-
-#### Fields
-
-1. Field 1
-2. Field 2
-
-
-## Algorithms
-
-## Persistence
-
-
+### 环境配置
 
 测试
 
 - 更换pwd 针对多个目录的操作
 - 
-
-
 
 每次调用只执行一个命令，也就是所有的信息 包括commit等都要序列化到gitlet中
 
@@ -61,8 +39,6 @@ java -cp D:\2024\CS61B_projects\CS61B_gitlet gitlet.Main
 
 
 
-
-
 ```
 python tester.py --verbose ./samples/test04-prev-checkout.in
 该命令有效，用于指定某一个测试而不是用make check执行所有测试
@@ -72,16 +48,12 @@ windows下路径用反斜杠分隔，但因为转义问题（e.g. \n）使用正
 
 in the run configuration page, set working directory and debug
 
-
-
 **目前具有四种执行/debug方式**
 
 - 在IDE里触发 设置工作目录与参数，逐步调试
 - 将java的main class注册到系统变量中，在任何目录打开命令行用如gitlet init的命令即可执行，**修改代码后要编译！**
 - python tester.py --verbose FILE.in 的方式执行单个集成测试  **修改代码后要编译！**
 - make default/check 执行全部集成测试  **修改代码后要编译！**
-
-
 
 bat文件记录
 
@@ -91,39 +63,7 @@ bat文件记录
 
 
 
-
-
-git commit message 规范
-
-| Type       | 说明                         | 示例                                |
-| ---------- | ---------------------------- | ----------------------------------- |
-| `feat`     | 添加新功能                   | `feat(fwd): add forward pass logic` |
-| `fix`      | 修复 bug                     | `fix(rev): correct gradient bug`    |
-| `docs`     | 修改文档                     | `docs(readme): update usage guide`  |
-| `style`    | 代码格式修改（不影响逻辑）   | `style(loma): reformat indentation` |
-| `refactor` | 重构代码（无新增功能或修复） | `refactor(core): clean up loops`    |
-| `perf`     | 性能优化                     | `perf(rev): speed up backprop`      |
-| `test`     | 添加或修改测试               | `test(loma): add unit tests`        |
-| `build`    | 构建系统变更（如 Makefile）  | `build(ci): add build step`         |
-| `ci`       | 持续集成配置                 | `ci(github): update workflow`       |
-| `chore`    | 杂项，不影响源代码或测试     | `chore(deps): update dependencies`  |
-| `revert`   | 回滚提交                     | `revert: undo feat(rev) commit`     |
-
-
-
-### scope 常见示例（括号中）：
-
-- `api`：接口层
-- `ui`：前端或界面
-- `core`：核心逻辑
-- `test`：测试模块
-- `docs`：文档相关
-
-
-
-
-
-
+### 对branch与merge的理解
 
 当前仓库唯一的head 一定是当前分支的head
 
@@ -188,6 +128,45 @@ merge考虑的一直是A、B、splitPoint的blob（tracked files）之间的关�
 
 
 
+### Commit message规范
+
+
+
+| Type       | 说明                         | 示例                                |
+| ---------- | ---------------------------- | ----------------------------------- |
+| `feat`     | 添加新功能                   | `feat(fwd): add forward pass logic` |
+| `fix`      | 修复 bug                     | `fix(rev): correct gradient bug`    |
+| `docs`     | 修改文档                     | `docs(readme): update usage guide`  |
+| `style`    | 代码格式修改（不影响逻辑）   | `style(loma): reformat indentation` |
+| `refactor` | 重构代码（无新增功能或修复） | `refactor(core): clean up loops`    |
+| `perf`     | 性能优化                     | `perf(rev): speed up backprop`      |
+| `test`     | 添加或修改测试               | `test(loma): add unit tests`        |
+| `build`    | 构建系统变更（如 Makefile）  | `build(ci): add build step`         |
+| `ci`       | 持续集成配置                 | `ci(github): update workflow`       |
+| `chore`    | 杂项，不影响源代码或测试     | `chore(deps): update dependencies`  |
+| `revert`   | 回滚提交                     | `revert: undo feat(rev) commit`     |
+
+- `api`：接口层
+- `ui`：前端或界面
+- `core`：核心逻辑
+- `test`：测试模块
+- `docs`：文档相关
+
+
+
+### Tests
+
+- 新建/切换branch，简单merge
+
+```
+
+```
+
+
+
+
+
+ && gitlet add wug.txt && gitlet commit 'commit in main'
 
 
 
@@ -195,24 +174,11 @@ merge考虑的一直是A、B、splitPoint的blob（tracked files）之间的关�
 
 
 
+如果add完改回去了怎么办
 
+如果一个文件先被移除又被添加怎么办
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+修改后的version对判断split point有没有影响
 
 
 

@@ -462,7 +462,6 @@ if __name__ == "__main__":
     for test in files:
         try:
             if not exists(test):
-                print('not a filessss')
                 num_tests -= 1
             elif not doTest(test):
                 errs += 1

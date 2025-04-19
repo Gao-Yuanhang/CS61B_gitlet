@@ -6,10 +6,7 @@ import java.util.stream.Collectors;
 
 import static gitlet.Utils.*;
 
-// TODO: any imports you need here
-
 /** Represents a gitlet repository.
- *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *
  *  @author TODO
@@ -90,7 +87,6 @@ public class Repository implements Serializable {
     }
 
     public void add(File fileToAdd){
-        // TODO: as a simplification in the instruction, do not resolve the subdirectories?
         List<String> plainFileNames = Utils.plainFilenamesIn(this.STAGING_ADD_DIR);
         String fileInStaging = Utils.findString(plainFileNames, fileToAdd.getName());
         //phase1, add or overwrite in the staging area for addition
@@ -131,21 +127,24 @@ public class Repository implements Serializable {
         newCommit.tracked_file_names = new TreeSet<>(getHead().tracked_file_names);
         newCommit.blobs = new TreeSet<>(getHead().blobs);
 
+        /** important!
+         * the index(e.g. '0' in wug.txt_0) is important, we can not just add 1 based on the parent version(because there can be multiple branches)
+         * the file is in a staging add dir, so a new version blob must be added(current max index + 1, no matter max is -1 or something)
+         * then the old version blob should be removed(if it is inherited from the parent commit
+         * in addition ,the index indicates the commit order(but maybe this feature is not used)*/
         for(String fileName : Utils.plainFilenamesIn(STAGING_ADD_DIR)){
-            if(getHead().tracked_file_names.contains(fileName)){
-                File currentVersionFile = getHead().findBlobFile(fileName);
-                newCommit.blobs.remove(currentVersionFile);
-                int versionNum = getHead().getVersion(fileName);
-                versionNum++;
-                //generate a new version of the file, and replace the old version
-                File newBlob = join(BLOB_DIR, fileName+"_"+String.valueOf(versionNum));
-                Utils.writeContents(newBlob, readContents(join(STAGING_ADD_DIR, fileName)));
-                newCommit.blobs.add(newBlob);
-            }else{
-                newCommit.tracked_file_names.add(fileName);
-                File newBlob = join(BLOB_DIR, fileName+"_"+String.valueOf(0));
-                Utils.writeContents(newBlob, readContents(join(STAGING_ADD_DIR, fileName)));
-                newCommit.blobs.add(newBlob);
+            int maxVersionNum = Utils.findMaxIndexVersion(fileName);
+            maxVersionNum++;
+            //generate a new version of the file, and replace the old version
+            File newBlob = join(BLOB_DIR, fileName+"_"+String.valueOf(maxVersionNum));
+            Utils.writeContents(newBlob, readContents(join(STAGING_ADD_DIR, fileName)));
+            newCommit.blobs.add(newBlob);
+            //add to tracked name set anyway
+            newCommit.tracked_file_names.add(fileName);
+            //remove the old version if its parent commit also tracked this file
+            if(getHead().tracked_file_names.contains(fileName)) {
+                File oldversionFile = getHead().findBlobFile(fileName);
+                newCommit.blobs.remove(oldversionFile);
             }
         }
         //resolve 'rm'
@@ -280,20 +279,22 @@ public class Repository implements Serializable {
     }
 
     public void checkout_branch(String branchName){
-        if(!this.branches.stream().map(Branch::getName).collect(Collectors.toSet()).contains(branchName)){
-            System.err.println("No such branch exists.");
+        if(currentBranch.name.equals(branchName)){
+            System.err.println("No need to checkout the current branch.");
             System.exit(0);
-        }else{
-            if(currentBranch.name.equals(branchName)){
-                System.err.println("No need to checkout the current branch.");
-                System.exit(0);
-            }
-            //checkout of files tracked in this commit
-            Commit commit = getHead();
-            checkoutCommit(commit);
-            //switch the branch
-            setCurrentBranch(branchName);
         }
+        for(Branch b : branches){
+            if (b.name.equals(branchName)){
+                //checkout of files tracked in this commit
+                Commit commit = b.currentCommit;
+                checkoutCommit(commit);
+                //switch the branch
+                setCurrentBranch(branchName);
+                return;
+            }
+        }
+        System.err.println("No such branch exists.");
+        System.exit(0);
     }
 
     public void branch(String branchName){
@@ -331,9 +332,9 @@ public class Repository implements Serializable {
         //TODO here we only focus on the files not in current commit? if it is modified but not staged or committed, it is totally OK?
         HashSet<String> fileNamesTracked = new HashSet<>();
         for(File blobFile : commit.blobs){
-            String nameWithPrefix = blobFile.getName();
-            String nameWithoutPrefix = nameWithPrefix.substring(0, nameWithPrefix.lastIndexOf("_"));//the original name of the file
-            fileNamesTracked.add(nameWithoutPrefix);
+            String nameWithSuffix = blobFile.getName();
+            String nameWithoutSuffix = nameWithSuffix.substring(0, nameWithSuffix.lastIndexOf("_"));//the original name of the file
+            fileNamesTracked.add(nameWithoutSuffix);
         }
         if(!fileNamesTracked.containsAll(Utils.plainFilenamesIn(CWD))){
             System.err.println("There is an untracked file in the way; delete it, or add and commit it first.");
@@ -343,9 +344,9 @@ public class Repository implements Serializable {
         Utils.clearDirectory(CWD);
         //load the files in the head of the new branch
         for(File blobFile : commit.blobs){
-            String nameWithPrefix = blobFile.getName();
-            String nameWithoutPrefix = nameWithPrefix.substring(0, nameWithPrefix.lastIndexOf("_"));
-            File newFile = join(CWD, nameWithoutPrefix);
+            String nameWithSuffix = blobFile.getName();
+            String nameWithoutSuffix = nameWithSuffix.substring(0, nameWithSuffix.lastIndexOf("_"));
+            File newFile = join(CWD, nameWithoutSuffix);
             Utils.writeContents(newFile, readContents(blobFile));
         }
         //clear the staging area
@@ -404,6 +405,8 @@ public class Repository implements Serializable {
                     }else{
                         //write conflict file
                         File conflictFile = join(CWD, fileName);
+                        Utils.clearFile(conflictFile);
+
                         Utils.writeFile(conflictFile, "<<<<<<< HEAD\n");
                         Utils.appendFile(currentCommit.findBlobFile(fileName), conflictFile);
                         Utils.writeFile(conflictFile, "=======\n");
@@ -428,6 +431,8 @@ public class Repository implements Serializable {
                     //conflict regarding a absent file(A modified while B removed)
                     //write conflict file
                     File conflictFile = join(CWD, fileName);
+                    Utils.clearFile(conflictFile);
+
                     Utils.writeFile(conflictFile, "<<<<<<< HEAD\n");
                     Utils.appendFile(currentCommit.findBlobFile(fileName), conflictFile);
                     Utils.writeFile(conflictFile, "=======\n");
@@ -450,6 +455,8 @@ public class Repository implements Serializable {
                 if(givenCommit.fileModifiedFrom(filename, splitPoint)){
                     //A deleted and B modified
                     File conflictFile = join(CWD, filename);
+                    Utils.clearFile(conflictFile);
+
                     Utils.writeFile(conflictFile, "<<<<<<< HEAD\n");
                     Utils.writeFile(conflictFile, "=======\n");
                     Utils.appendFile(currentCommit.findBlobFile(filename), conflictFile);

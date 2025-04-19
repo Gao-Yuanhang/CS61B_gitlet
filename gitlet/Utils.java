@@ -294,8 +294,16 @@ class Utils {
 
     static void writeFile(File file, String content){
         try (FileWriter fw = new FileWriter(file, true);
-             BufferedWriter bw = new BufferedWriter(fw)) {
+            BufferedWriter bw = new BufferedWriter(fw)) {
             bw.write(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    static void clearFile(File file){
+        try (FileWriter fw = new FileWriter(file, false);
+            BufferedWriter bw = new BufferedWriter(fw)) {
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -317,6 +325,20 @@ class Utils {
         } catch (IOException e) {
             throw new RuntimeException("Error appending file content", e);
         }
+    }
+
+    /** given the targetName(filename without suffix), return the largest index of blobs in this repository
+     * if not tracked by any exist commits, return -1*/
+    public static int findMaxIndexVersion(String targetname){
+        int max = -1;
+        for (File f : Repository.BLOB_DIR.listFiles()){
+            String nameWithSuffix = f.getName();
+            String nameWithoutSuffix = nameWithSuffix.substring(0, nameWithSuffix.lastIndexOf("_"));
+            int version = Integer.valueOf(nameWithSuffix.substring(nameWithSuffix.lastIndexOf("_")+1));
+            if(nameWithoutSuffix.equals(targetname))
+                max = version;
+        }
+        return max;
     }
 
 }

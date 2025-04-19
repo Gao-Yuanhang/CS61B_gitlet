@@ -62,12 +62,13 @@ public class Commit implements Serializable {
     }
 
     /** given a string file name, find the specific blob corresponding to it in this commit*/
+
     public File findBlobFile(String fileName){
         if(this.tracked_file_names.contains(fileName)){
             for(File f : this.blobs){
-                String nameWithPrefix = f.getName();
-                String nameWithoutPrefix = nameWithPrefix.substring(0, nameWithPrefix.lastIndexOf("_"));
-                if(nameWithoutPrefix.equals(fileName)){
+                String nameWithSuffix = f.getName();
+                String nameWithoutSuffix = nameWithSuffix.substring(0, nameWithSuffix.lastIndexOf("_"));
+                if(nameWithoutSuffix.equals(fileName)){
                     return f;
                 }
             }
@@ -127,10 +128,10 @@ public class Commit implements Serializable {
     /** get the version of a file in the blob for this commit, precondition: the file is tracked by current commit*/
     public int getVersion(String fileName){
         for(File f : this.blobs){
-            String nameWithPrefix = f.getName();
-            String nameWithoutPrefix = nameWithPrefix.substring(0, nameWithPrefix.lastIndexOf("_"));
-            if(nameWithoutPrefix.equals(fileName)){
-                int version = Integer.valueOf(nameWithPrefix.substring(nameWithPrefix.lastIndexOf("_")+1));
+            String nameWithSuffix = f.getName();
+            String nameWithoutSuffix = nameWithSuffix.substring(0, nameWithSuffix.lastIndexOf("_"));
+            if(nameWithoutSuffix.equals(fileName)){
+                int version = Integer.valueOf(nameWithSuffix.substring(nameWithSuffix.lastIndexOf("_")+1));
                 return version;
             }
         }
