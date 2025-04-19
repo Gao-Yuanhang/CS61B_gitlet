@@ -167,6 +167,10 @@ public class Main {
         }else{
             throw new GitletException("have not set the currentRepo");
         }
+        //TODO
+        //mysterious. without this statement, after calling 'clear', a "have not set the currentRepo" exception will be thrown(but it shouldn't
+        //when trying to execute a few command serially in a .bat file, without '&&' connecting commands, the command after 'gitlet init' will not be executed
+        System.exit(0);
     }
 
     public static void deleteNonBatFiles(File dir) {

@@ -83,6 +83,16 @@ in the run configuration page, set working directory and debug
 
 
 
+bat文件记录
+
+```
+ && gitlet commit "version 1 of wug.txt" && echo This is not a wug. > wug.txt && gitlet add wug.txt
+```
+
+
+
+
+
 git commit message 规范
 
 | Type       | 说明                         | 示例                                |

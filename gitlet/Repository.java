@@ -261,17 +261,9 @@ public class Repository implements Serializable {
     }
 
     public void checkout_files_byID(String ID, String filename){
-        List<Commit> commits = this.commits.stream()
-                .filter(c -> c.ID.substring(0,6).equals(ID))
-                .collect(Collectors.toList());
-        if(commits.size() == 0){
-            System.err.println("No commit with that id exists.");
-            System.exit(0);
-        }else{
-            Commit commit = commits.get(0);
-            File blobFile = commit.findBlobFile(filename);
-            aux_checkout(filename, blobFile);
-        }
+        Commit c = findCommitByShortID(ID);
+        File blobFile = c.findBlobFile(filename);
+        aux_checkout(filename, blobFile);
     }
 
     private void aux_checkout(String filename, File blobFile) {
@@ -328,18 +320,10 @@ public class Repository implements Serializable {
     }
 
     public void reset(String ID){
-        List<Commit> commits = this.commits.stream()
-                .filter(c -> c.ID.substring(0,6).equals(ID))
-                .collect(Collectors.toList());
-        if(commits.size() == 0){
-            System.err.println("No commit with that id exists.");
-            System.exit(0);
-        }else{
-            Commit commit = commits.get(0);
-            checkoutCommit(commit);
-            //set head for current branch
-            currentBranch.currentCommit = commit;
-        }
+        Commit commit = findCommitByShortID(ID);
+        checkoutCommit(commit);
+        //set head for current branch
+        currentBranch.currentCommit = commit;
     }
 
     public void checkoutCommit(Commit commit){
@@ -430,7 +414,7 @@ public class Repository implements Serializable {
                     }
                 }else if(!modifiedByA && modifiedByB){
                     //case 1
-                    checkout_files_byID(givenCommit.ID.substring(0,6), fileName);
+                    checkout_files_byID(givenCommit.ID, fileName);
                     add(join(CWD, fileName));
                 }else{
                     //only A modified or both A and B unmodified, do nothing
@@ -475,7 +459,7 @@ public class Repository implements Serializable {
                 }
             }else if(!splitPoint.tracked_file_names.contains(filename) && givenCommit.tracked_file_names.contains(filename)){
                 //case 5
-                checkout_files_byID(givenCommit.ID.substring(0,6), filename);
+                checkout_files_byID(givenCommit.ID, filename);
                 add(join(CWD, filename));
             }else{
                 //meaning both A and B removed the file, do nothing
@@ -483,6 +467,29 @@ public class Repository implements Serializable {
         }
         commit("Merged "+ branchName +" into " + currentBranch.getName() + ".");
 
+    }
+
+    //the input ID that may be abbreviated, print error and exit(0) when [no matched commit] or [having conflicts]
+    public Commit findCommitByShortID(String prefixID){
+        Commit target = null;
+        //num of commits that have the prefix
+        int num = 0;
+        int prefixLength = prefixID.length();
+        for(Commit commit : commits){
+            if(commit.ID.substring(0, prefixLength).equals(prefixID)){
+                num++;
+                target = commit;
+            }
+        }
+        if(num > 1){
+            System.err.println("[self defined error]ambiguous argument.");
+            System.exit(0);
+        }
+        if(num == 0){
+            System.err.println("No commit with that id exists.");
+            System.exit(0);
+        }
+        return target;
     }
 }
 
