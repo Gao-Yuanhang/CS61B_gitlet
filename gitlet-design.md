@@ -39,6 +39,166 @@ java -cp D:\2024\CS61B_projects\CS61B_gitlet gitlet.Main
 
 
 
+temp command
+
+```
+python tester.py --verbose ./samples/test11-basic-status.in
+```
+
+error information
+
+```
+ec-test01-untracked:
+ERROR (incorrect output with my output [=== Branches ===
+*master
+
+=== Staged Files ===
+
+=== Removed Files ===
+
+=== Modifications Not Staged For Commit ===
+
+=== Untracked Files ===
+
+])
+ec-test10-diff-head-working:
+FAILED (file text1.txt could not be copied to f.txt)
+ec-test10-remote-fetch-push:
+FAILED (file wug2.txt could not be copied to k.txt)
+ec-test11-diff-branch-working:
+FAILED (file text1.txt could not be copied to f.txt)
+ec-test11-remote-fetch-pull:
+ERROR (incorrect output with my output [No command with that name exists.
+])
+ec-test12-bad-remotes-err:
+FAILED (file wug2.txt could not be copied to k.txt)
+ec-test12-diff-two-branches:
+FAILED (file text1.txt could not be copied to f.txt)
+test01-init:
+OK
+test02-basic-checkout:
+OK
+test03-basic-log:
+OK
+test04-prev-checkout:
+OK
+test11-basic-status:
+OK
+test12-add-status:
+OK
+test13-remove-status:
+OK
+test14-add-remove-status:
+ERROR (incorrect output with my output [No reason to remove the file.
+])
+test15-remove-add-status:
+ERROR (incorrect output with my output [=== Branches ===
+*master
+
+=== Staged Files ===
+
+=== Removed Files ===
+f.txt
+
+=== Modifications Not Staged For Commit ===
+
+=== Untracked Files ===
+
+])
+test16-empty-commit-err:
+OK
+test17-empty-commit-message-err:
+OK
+test18-nop-add:
+OK
+test19-add-missing-err:
+OK
+test20-status-after-commit:
+OK
+test21-nop-remove-err:
+OK
+test22-remove-deleted-file:
+ERROR (incorrect output with my output [=== Branches ===
+*master
+
+=== Staged Files ===
+
+=== Removed Files ===
+
+=== Modifications Not Staged For Commit ===
+
+=== Untracked Files ===
+
+])
+test23-global-log:
+OK
+test24-global-log-prev:
+ERROR (incorrect output with my output [There is an untracked file in the way; delete it, or add and commit it first.
+])
+test25-successful-find:
+OK
+test26-successful-find-orphan:
+OK
+test27-unsuccessful-find-err:
+ERROR (incorrect output with my output [])
+test28-checkout-detail:
+OK
+test29-bad-checkouts-err:
+ERROR (incorrect output with my output [])
+test30-branches:
+ERROR (incorrect output with my output [There is an untracked file in the way; delete it, or add and commit it first.
+])
+test30-rm-branch:
+ERROR (incorrect output with my output [There is an untracked file in the way; delete it, or add and commit it first.
+])
+test31-duplicate-branch-err:
+OK
+test31-rm-branch-err:
+OK
+test32-file-overwrite-err:
+ERROR (incorrect output with my output [There is an untracked file in the way; delete it, or add and commit it first.
+])
+test33-merge-no-conflicts:
+FAILED (file wug2.txt could not be copied to h.txt)
+test34-merge-conflicts:
+FAILED (file wug2.txt could not be copied to h.txt)
+test35-merge-rm-conflicts:
+FAILED (file wug2.txt could not be copied to h.txt)
+test36-merge-err:
+FAILED (file wug2.txt could not be copied to h.txt)
+test36-merge-parent2:
+ERROR (incorrect output with my output [There is an untracked file in the way; delete it, or add and commit it first.
+])
+test37-reset1:
+FAILED (file wug2.txt could not be copied to h.txt)
+test38-bad-resets-err:
+FAILED (file wug2.txt could not be copied to h.txt)
+test39-short-uid:
+OK
+test40-special-merge-cases:
+FAILED (file wug2.txt could not be copied to h.txt)
+test41-no-command-err:
+OK
+test42-other-err:
+OK
+test43-criss-cross-merge-b:
+ERROR (incorrect output with my output [There is an untracked file in the way; delete it, or add and commit it first.
+])
+test43-criss-cross-merge:
+ERROR (incorrect output with my output [There is an untracked file in the way; delete it, or add and commit it first.
+])
+test44-bai-merge:
+FAILED (file a.txt could not be copied to A.txt)
+
+Ran 49 tests. 22 passed.
+make[1]: *** [check] Error 1
+make[1]: Leaving directory `D:/2024/CS61B_projects/CS61B_gitlet/testing'
+make: *** [check] Error 2
+
+```
+
+
+
 ```
 python tester.py --verbose ./samples/test04-prev-checkout.in
 该命令有效，用于指定某一个测试而不是用make check执行所有测试

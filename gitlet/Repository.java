@@ -248,10 +248,14 @@ public class Repository implements Serializable {
         System.out.println("");
 
         /** TODO bonus*/
+        System.out.println("=== Modifications Not Staged For Commit ===");
+        System.out.println("");
+
+        System.out.println("=== Untracked Files ===");
+        System.out.println("");
 
         /** TODO end*/
 
-        System.out.println("");
     }
 
     public void checkout_files(String filename){

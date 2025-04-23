@@ -358,7 +358,7 @@ def doTest(test):
                 if msg == "OK":
                     if not correctProgramOutput(expected, out, last_groups,
                                                 is_regexp):
-                        msg = "incorrect output with real output [" + out + "]"
+                        msg = "incorrect output with my output [" + out + "]"
                 if msg != "OK":
                     print("ERROR ({})".format(msg))
                     reportDetails(test, included_files, line_num)

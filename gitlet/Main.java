@@ -153,7 +153,7 @@ public class Main {
                 break;
             case "clear":
                 //TODO used only in debugging
-                deleteNonBatFiles(Repository.CWD);
+                deleteNonBatFiles(new File("D:\\2024\\CS61B_projects\\CS61B_gitlet\\testing\\temptesting"));
                 System.exit(0);
                 break;
             default:
