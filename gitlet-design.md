@@ -77,11 +77,11 @@ FAILED (file text1.txt could not be copied to f.txt)
 test01-init:
 OK
 test02-basic-checkout:
-ERROR (java gitlet.Main exited with code 1)
+OK
 test03-basic-log:
 OK
 test04-prev-checkout:
-ERROR (java gitlet.Main exited with code 1)
+OK
 test11-basic-status:
 OK
 test12-add-status:
@@ -109,19 +109,19 @@ OK
 test23-global-log:
 OK
 test24-global-log-prev:
-ERROR (java gitlet.Main exited with code 1)
+OK
 test25-successful-find:
 OK
 test26-successful-find-orphan:
-ERROR (java gitlet.Main exited with code 1)
+OK
 test27-unsuccessful-find-err:
 ERROR (incorrect output with my output [])
 test28-checkout-detail:
-ERROR (java gitlet.Main exited with code 1)
+OK
 test29-bad-checkouts-err:
-ERROR (java gitlet.Main exited with code 1)
+ERROR (incorrect output with my output [])
 test30-branches:
-ERROR (java gitlet.Main exited with code 1)
+OK
 test30-rm-branch:
 OK
 test31-duplicate-branch-err:
@@ -145,7 +145,7 @@ FAILED (file wug2.txt could not be copied to h.txt)
 test38-bad-resets-err:
 FAILED (file wug2.txt could not be copied to h.txt)
 test39-short-uid:
-ERROR (java gitlet.Main exited with code 1)
+OK
 test40-special-merge-cases:
 FAILED (file wug2.txt could not be copied to h.txt)
 test41-no-command-err:
@@ -153,13 +153,13 @@ OK
 test42-other-err:
 OK
 test43-criss-cross-merge-b:
-ERROR (java gitlet.Main exited with code 1)
+ERROR (file f.txt has incorrect content)
 test43-criss-cross-merge:
 ERROR (file f.txt has incorrect content)
 test44-bai-merge:
 FAILED (file a.txt could not be copied to A.txt)
 
-Ran 49 tests. 22 passed.
+Ran 49 tests. 29 passed.
 make[1]: *** [check] Error 1
 make[1]: Leaving directory `D:/2024/CS61B_projects/CS61B_gitlet/testing'
 make: *** [check] Error 2

@@ -17,7 +17,6 @@ public class Main {
         /** by Deserialization, recovery from the .gitlet folder*/
         Repository currentRepo = null;
 
-        // TODO: what if args is empty?
         if(args.length == 0){
             System.err.println("Please enter a command.");
             System.exit(0);
@@ -51,14 +50,12 @@ public class Main {
                 break;
             case "add":
                 if(args.length != 2){
-                    // TODO: output like this?
                     System.err.println("Incorrect operands.");
                     System.exit(0);
                 }
                 String secondArg = args[1];
                 File fileToAdd = new File(secondArg);
                 if(!fileToAdd.exists()){
-                    // TODO: throw an exception or print in the err stream and exit(0)
                     System.err.println("File does not exist");
                     System.exit(0);
                 }
@@ -117,9 +114,17 @@ public class Main {
                     currentRepo.checkout_branch(args[1]);
                 }else if(args.length == 3){
                     //java gitlet.Main checkout -- [file name]
+                    if(!args[1].equals("--")){
+                        System.err.println("Incorrect operands.");
+                        System.exit(0);
+                    }
                     currentRepo.checkout_files(args[2]);
                 }else if(args.length == 4){
                     //java gitlet.Main checkout [commit id] -- [file name]
+                    if(!args[2].equals("--")){
+                        System.err.println("Incorrect operands.");
+                        System.exit(0);
+                    }
                     currentRepo.checkout_files_byID(args[1], args[3]);
                 }else{
                     System.err.println("Incorrect operands.");
