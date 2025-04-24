@@ -113,10 +113,13 @@ public class Main {
                 break;
             case "checkout":
                 if(args.length == 2){
+                    //java gitlet.Main checkout [branch name]
                     currentRepo.checkout_branch(args[1]);
                 }else if(args.length == 3){
+                    //java gitlet.Main checkout -- [file name]
                     currentRepo.checkout_files(args[2]);
                 }else if(args.length == 4){
+                    //java gitlet.Main checkout [commit id] -- [file name]
                     currentRepo.checkout_files_byID(args[1], args[3]);
                 }else{
                     System.err.println("Incorrect operands.");

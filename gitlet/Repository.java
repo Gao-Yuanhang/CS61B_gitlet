@@ -221,10 +221,17 @@ public class Repository implements Serializable {
     }
 
     public void find(String message){
+        int num = 0;//the num of matched commits
         for(Commit commit : this.commits){
             if(commit.message.equals(message)){
                 System.out.println(commit.ID);
+                num++;
             }
+        }
+        //failure case
+        if(num == 0){
+            System.out.println("Found no commit with that message.");
+            System.exit(0);
         }
     }
 
@@ -264,24 +271,35 @@ public class Repository implements Serializable {
 
     public void checkout_files(String filename){
         File blobFile = this.getHead().findBlobFile(filename);
-        aux_checkout(filename, blobFile);
+        aux_checkout(filename, blobFile, false);
     }
 
     public void checkout_files_byID(String ID, String filename){
         Commit c = findCommitByShortID(ID);
         File blobFile = c.findBlobFile(filename);
-        aux_checkout(filename, blobFile);
+        aux_checkout(filename, blobFile, false);
     }
 
-    private void aux_checkout(String filename, File blobFile) {
+    /** filename- the original filename; blobFile- corresponding file in the blobs
+     *  the 'errorMessageNeeded' field means that if an error message 'There is an untracked file in the way' is wanted when a file is overwritten
+     *  in the requirements, if the operation is oriented to a single file(e.g. checkout a file/a file by a commit ID), such message is not needed*/
+    private void aux_checkout(String filename, File blobFile, boolean errorMessageNeeded) {
         if(blobFile == null){
             System.err.println("File does not exist in that commit.");
             System.exit(0);
         }else{
             File fileToWrite = join(CWD, filename);
             //overwrite
-            if(fileToWrite.exists())
+            if(fileToWrite.exists()){
+                //if it is untracked and will be overwritten, an error will be present
+                //TODO but I'm not sure what 'untracked' means
+                //just take it as the most simple way, if it is not tracked in the HEAD
+                if(!getHead().tracked_file_names.contains(filename) && errorMessageNeeded){
+                    System.err.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                    System.exit(0);
+                }
                 fileToWrite.delete();
+            }
             Utils.writeContents(fileToWrite, readContents(blobFile));
         }
     }
@@ -298,11 +316,30 @@ public class Repository implements Serializable {
                 checkoutCommit(commit);
                 //switch the branch
                 setCurrentBranch(branchName);
+                //clear the staging area
+                Utils.clearDirectory(STAGING_ADD_DIR);
+                Utils.clearDirectory(STAGING_RM_DIR);
                 return;
             }
         }
         System.err.println("No such branch exists.");
         System.exit(0);
+    }
+
+    /** it will only operate the files, excluding the metadata of the repository(e.g. branch, staging area..*/
+    public void checkoutCommit(Commit commit){
+        //load the files in the head of the new branch
+        for(File blobFile : commit.blobs){
+            String nameWithSuffix = blobFile.getName();
+            String nameWithoutSuffix = nameWithSuffix.substring(0, nameWithSuffix.lastIndexOf("_"));
+            aux_checkout(nameWithoutSuffix, blobFile, true);
+        }
+        //if a file is tracked in the current branch but not present in the given commit, it should be removed
+        for(File f : CWD.listFiles()){
+            if(getHead().tracked_file_names.contains(f.getName()) && !commit.tracked_file_names.contains(f.getName())){
+                f.delete();
+            }
+        }
     }
 
     public void branch(String branchName){
@@ -333,30 +370,6 @@ public class Repository implements Serializable {
         checkoutCommit(commit);
         //set head for current branch
         currentBranch.currentCommit = commit;
-    }
-
-    public void checkoutCommit(Commit commit){
-        //check if there are untracked files
-        //TODO here we only focus on the files not in current commit? if it is modified but not staged or committed, it is totally OK?
-        HashSet<String> fileNamesTracked = new HashSet<>();
-        for(File blobFile : commit.blobs){
-            String nameWithSuffix = blobFile.getName();
-            String nameWithoutSuffix = nameWithSuffix.substring(0, nameWithSuffix.lastIndexOf("_"));//the original name of the file
-            fileNamesTracked.add(nameWithoutSuffix);
-        }
-        if(!fileNamesTracked.containsAll(Utils.plainFilenamesIn(CWD))){
-            System.err.println("There is an untracked file in the way; delete it, or add and commit it first.");
-            System.exit(0);
-        }
-        //clear the working directory
-        Utils.clearDirectory(CWD);
-        //load the files in the head of the new branch
-        for(File blobFile : commit.blobs){
-            String nameWithSuffix = blobFile.getName();
-            String nameWithoutSuffix = nameWithSuffix.substring(0, nameWithSuffix.lastIndexOf("_"));
-            File newFile = join(CWD, nameWithoutSuffix);
-            Utils.writeContents(newFile, readContents(blobFile));
-        }
         //clear the staging area
         Utils.clearDirectory(STAGING_ADD_DIR);
         Utils.clearDirectory(STAGING_RM_DIR);
