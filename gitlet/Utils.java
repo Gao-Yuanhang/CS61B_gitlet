@@ -255,7 +255,6 @@ class Utils {
         if(b2.length != b1.length){
             return false;
         }
-        // TODO: index in java must be int, what if the length exceeds int
         for(int i=0; i<b1.length; i++){
             if(b2[i]!=b1[i]){
                 return false;

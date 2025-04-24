@@ -42,7 +42,7 @@ java -cp D:\2024\CS61B_projects\CS61B_gitlet gitlet.Main
 temp command
 
 ```
-python tester.py --verbose ./samples/test11-basic-status.in
+python tester.py --verbose ./samples/test15-remove-add-status.in
 ```
 
 error information
@@ -89,8 +89,7 @@ OK
 test13-remove-status:
 OK
 test14-add-remove-status:
-ERROR (incorrect output with my output [No reason to remove the file.
-])
+OK
 test15-remove-add-status:
 ERROR (incorrect output with my output [=== Branches ===
 *master
@@ -190,11 +189,10 @@ ERROR (incorrect output with my output [There is an untracked file in the way; d
 test44-bai-merge:
 FAILED (file a.txt could not be copied to A.txt)
 
-Ran 49 tests. 22 passed.
+Ran 49 tests. 23 passed.
 make[1]: *** [check] Error 1
 make[1]: Leaving directory `D:/2024/CS61B_projects/CS61B_gitlet/testing'
 make: *** [check] Error 2
-
 ```
 
 

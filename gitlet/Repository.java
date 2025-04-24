@@ -108,7 +108,12 @@ public class Repository implements Serializable {
                 newFile.delete();
             }
         }
-        // TODO: for the file staged for removal
+        //unmark the file (if it is) in the removal staging area
+        for(File f : STAGING_RM_DIR.listFiles()){
+            if(f.getName().equals(fileToAdd.getName())){
+                f.delete();
+            }
+        }
     }
 
     public void commit(String message){
@@ -169,13 +174,10 @@ public class Repository implements Serializable {
     }
 
     public void rm(String fileName){
-        File fileToRm = new File(fileName);
-        if(!fileToRm.exists())
-            return;
         //flag indicating if some operations are done
         boolean flag = false;
         for(File f : STAGING_ADD_DIR.listFiles()){
-            if(f.equals(fileToRm)){
+            if(f.getName().equals(fileName)){
                 f.delete();
                 flag = true;
             }
@@ -185,16 +187,18 @@ public class Repository implements Serializable {
         if(!getHead().tracked_file_names.contains(fileName) && !flag){
             System.err.println("No reason to remove the file.");
             System.exit(0);
-        }else{
+        }
+        //only when the file is tracked in the current commit
+        if(getHead().tracked_file_names.contains(fileName)){
             //just use the file to record the name of files to remove, no contents will be written
             File f = join(STAGING_RM_DIR, fileName);
             if(!f.exists()){
-				try {
-					f.createNewFile();
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			}
+                try {
+                    f.createNewFile();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             File fileInCWD = join(CWD, fileName);
             if(fileInCWD.exists())
                 fileInCWD.delete();
