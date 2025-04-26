@@ -119,10 +119,13 @@ public class Commit implements Serializable {
             //the file is added
             return true;
         }
-        int oldVersion = ancestor.getVersion(fileName);
-        int newVersion = this.getVersion(fileName);
-        assert (oldVersion <= newVersion);
-        return (oldVersion < newVersion);
+//        int oldVersion = ancestor.getVersion(fileName);
+//        int newVersion = this.getVersion(fileName);
+//        assert (oldVersion <= newVersion);
+//        return (oldVersion < newVersion);
+        File fileInAncestor = ancestor.findBlobFile(fileName);
+        File fileInCurrent = this.findBlobFile(fileName);
+        return !Utils.checkFilesDifference(fileInCurrent, fileInAncestor);
     }
 
     /** get the version of a file in the blob for this commit, precondition: the file is tracked by current commit*/
