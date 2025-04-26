@@ -467,8 +467,8 @@ public class Repository implements Serializable {
         }
 
         //Part2: considering files not in currentCommit
-        HashSet<String> filesInBOrSplit = new HashSet<>(splitPoint.tracked_file_names);
-        filesInBOrSplit.addAll(givenCommit.tracked_file_names);
+        //HashSet<String> filesInBOrSplit = new HashSet<>(splitPoint.tracked_file_names);
+        //filesInBOrSplit.addAll(givenCommit.tracked_file_names);
         for(String filename : givenCommit.tracked_file_names){
             if(currentCommit.tracked_file_names.contains(filename))
                 continue;
@@ -495,6 +495,8 @@ public class Repository implements Serializable {
         }
         commit("Merged "+ branchName +" into " + currentBranch.getName() + ".");
 
+        getHead().parentCommits.add(givenCommit);
+        getHead().CalculateID();
     }
 
     //the input ID that may be abbreviated, print error and exit(0) when [no matched commit] or [having conflicts]

@@ -249,6 +249,7 @@ class Utils {
 
     }
 
+    /** when same, return true*/
     static boolean checkFilesDifference(File file1, File file2){
         byte [] b1 = Utils.readContents(file1);
         byte [] b2 = Utils.readContents(file2);
@@ -271,7 +272,7 @@ class Utils {
         if(current.parentCommits.size() >= 2){
             Commit c1 = current.parentCommits.get(0);
             Commit c2 = current.parentCommits.get(1);
-            System.out.println("merge: " + c1.ID.substring(0,7) + " " + c2.ID.substring(0,7));
+            System.out.println("Merge: " + c1.ID.substring(0,7) + " " + c2.ID.substring(0,7));
         }
 
         //show the time of current time zone instead of standard time zone

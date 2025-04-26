@@ -48,123 +48,18 @@ python tester.py --verbose ./samples/test15-remove-add-status.in
 error information
 
 ```
-ec-test01-untracked:
-ERROR (incorrect output with my output [=== Branches ===
-*master
-
-=== Staged Files ===
-
-=== Removed Files ===
-
-=== Modifications Not Staged For Commit ===
-
-=== Untracked Files ===
-
-])
-ec-test10-diff-head-working:
-FAILED (file text1.txt could not be copied to f.txt)
-ec-test10-remote-fetch-push:
-FAILED (file wug2.txt could not be copied to k.txt)
-ec-test11-diff-branch-working:
-FAILED (file text1.txt could not be copied to f.txt)
-ec-test11-remote-fetch-pull:
-ERROR (incorrect output with my output [No command with that name exists.
-])
-ec-test12-bad-remotes-err:
-FAILED (file wug2.txt could not be copied to k.txt)
-ec-test12-diff-two-branches:
-FAILED (file text1.txt could not be copied to f.txt)
-test01-init:
-OK
-test02-basic-checkout:
-OK
-test03-basic-log:
-OK
-test04-prev-checkout:
-OK
-test11-basic-status:
-OK
-test12-add-status:
-OK
-test13-remove-status:
-OK
-test14-add-remove-status:
-OK
-test15-remove-add-status:
-OK
-test16-empty-commit-err:
-OK
-test17-empty-commit-message-err:
-OK
-test18-nop-add:
-OK
-test19-add-missing-err:
-OK
-test20-status-after-commit:
-OK
-test21-nop-remove-err:
-OK
-test22-remove-deleted-file:
-OK
-test23-global-log:
-OK
-test24-global-log-prev:
-OK
-test25-successful-find:
-OK
-test26-successful-find-orphan:
-OK
-test27-unsuccessful-find-err:
-ERROR (incorrect output with my output [])
-test28-checkout-detail:
-OK
-test29-bad-checkouts-err:
-ERROR (incorrect output with my output [])
-test30-branches:
-OK
-test30-rm-branch:
-OK
-test31-duplicate-branch-err:
-OK
-test31-rm-branch-err:
-OK
-test32-file-overwrite-err:
-OK
-test33-merge-no-conflicts:
-FAILED (file wug2.txt could not be copied to h.txt)
-test34-merge-conflicts:
-FAILED (file wug2.txt could not be copied to h.txt)
-test35-merge-rm-conflicts:
-FAILED (file wug2.txt could not be copied to h.txt)
-test36-merge-err:
-FAILED (file wug2.txt could not be copied to h.txt)
-test36-merge-parent2:
-ERROR (file f.txt present)
-test37-reset1:
-FAILED (file wug2.txt could not be copied to h.txt)
-test38-bad-resets-err:
-FAILED (file wug2.txt could not be copied to h.txt)
-test39-short-uid:
-OK
-test40-special-merge-cases:
-FAILED (file wug2.txt could not be copied to h.txt)
-test41-no-command-err:
-OK
-test42-other-err:
-OK
-test43-criss-cross-merge-b:
-ERROR (file f.txt has incorrect content)
-test43-criss-cross-merge:
-ERROR (file f.txt has incorrect content)
-test44-bai-merge:
-FAILED (file a.txt could not be copied to A.txt)
-
-Ran 49 tests. 29 passed.
-make[1]: *** [check] Error 1
-make[1]: Leaving directory `D:/2024/CS61B_projects/CS61B_gitlet/testing'
-make: *** [check] Error 2
 
 ```
+
+
+
+注意测试中比如用正则表达式匹配log时，其对正确性的检验并不完全
+
+比如只会检测‘大致’的格式是否正确，而其中“Merge: ......”这里是可选的
+
+而当一个commit是merge命令的结果时，如果没有打印这一信息是检测不到的
+
+我在print出混淆了打印merge信息时‘M’的大小写，导致一开始忘记将merged commit的另一个parent加入其parentCommits中（此时记录的commit tree是有问题的，但压根不会触发打印merge信息的代码，导致反而能正确通过测试；在修改commit tree结构为正确形式后，反而因为‘merge’的大小写测试失败
 
 
 
